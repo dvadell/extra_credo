@@ -1,6 +1,6 @@
 # IronLawCredo
 
-**TODO: Add description**
+These credo rules were taken from https://github.com/oliver-kriska/claude-elixir-phoenix
 
 ## Installation
 

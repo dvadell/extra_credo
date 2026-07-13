@@ -39,12 +39,10 @@ defmodule Credo.Check.IronLaw.NoAuthInHandleEvent do
       []
     end
 
-    Map.get(source_file, :ast)
-    |> traverse_call(&check_handle_event(&1, source_file))
-    |> Enum.filter(&(&1 != nil))
+    IronLawCredo.ASTTraversal.collect_issues(source_file, &check_handle_event/2)
   end
 
-  defp check_handle_event({:def, meta, [{:handle_event, _, [_event, _params, _socket]} | body]} = _call, source_file) do
+  defp check_handle_event({:def, meta, [{:handle_event, _, [_event, _params, _socket]} | body]}, source_file) do
     if has_auth_check?(body) do
       nil
     else
@@ -52,20 +50,12 @@ defmodule Credo.Check.IronLaw.NoAuthInHandleEvent do
     end
   end
 
-  defp check_handle_event(_, _), do: nil
+  defp check_handle_event(_, _source_file), do: nil
 
   defp has_auth_check?(body) do
     body
-    |> flatten()
+    |> IronLawCredo.ASTTraversal.flatten()
     |> Enum.any?(&is_auth_call?/1)
-  end
-
-  defp flatten({_, _, children}) when is_list(children) do
-    Enum.flat_map(children, &flatten/1)
-  end
-
-  defp flatten(node) do
-    [node]
   end
 
   defp is_auth_call?({:., _, [_, func]}) do
@@ -76,44 +66,35 @@ defmodule Credo.Check.IronLaw.NoAuthInHandleEvent do
     to_string(func) in @auth_functions
   end
 
-  defp is_auth_call?({:if, _, [{auth_call, _, _}]}) do
-    is_auth_call?(auth_call)
+  defp is_auth_call?({:if, _, [condition | _]}) do
+    is_auth_call?(condition)
   end
 
-  defp is_auth_call?({:case, _, [{auth_call, _, _}]}) do
-    is_auth_call?(auth_call)
+  defp is_auth_call?({:case, _, [subject | _]}) do
+    is_auth_call?(subject)
   end
 
   defp is_auth_call?({:with, _, clauses}) do
     Enum.any?(clauses, &is_auth_call?/1)
   end
 
+  defp is_auth_call?({key, node}) when key in [:do, :else, :after] do
+    is_auth_call?(node)
+  end
+
   defp is_auth_call?(_) do
     false
   end
-
-  defp traverse_call(ast, fun) when is_list(ast), do: Enum.flat_map(ast, &traverse_call(&1, fun))
-
-  defp traverse_call(call = {:def, _, [{:handle_event, _, [_]} | _]} = _call, fun) do
-    [fun.(call)] ++ Enum.flat_map(elem(call, 2), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(ast, fun) when is_tuple(ast) do
-    [fun.(ast)] ++ Enum.flat_map(Tuple.to_list(ast), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(_ast, _fun), do: []
 
   defp issue(source_file, meta) do
     %Issue{
       filename: source_file.filename,
       line_no: meta[:line] || 0,
-      message: """
-      handle_event without authorization check. Mount-time authorization is\n" <>
-      "insufficient — users can call events directly via WebSocket. Add an\n" <>
-      "authorized?/authorize check in every handle_event.\n\n" <>
-      "  if authorized?(user, :action, resource) do\n"
-    """
+      trigger: Issue.no_trigger(),
+message: "handle_event without authorization check. Mount-time authorization is\n" <>
+                "insufficient — users can call events directly via WebSocket. Add an\n" <>
+                "authorized?/authorize check in every handle_event.\n\n" <>
+                "  if authorized?(user, :action, resource) do\n"
     }
   end
 end

@@ -35,61 +35,43 @@ defmodule Credo.Check.IronLaw.NoBareChangesetError do
       []
     end
 
-    Map.get(source_file, :ast)
-    |> traverse_call(&check_bare_changeset_error(&1, source_file))
-    |> Enum.filter(&(&1 != nil))
+    IronLawCredo.ASTTraversal.collect_issues(source_file, &check_bare_changeset_error/2)
   end
 
-  defp check_bare_changeset_error({:def, meta, [{:handle_event, _, [_event, _params, _socket]} | body]} = _call, source_file) do
+  defp check_bare_changeset_error({:def, meta, [{:handle_event, _, [_event, _params, _socket]} | body]}, source_file) do
     case find_bare_error(body) do
       nil -> nil
       line -> issue(source_file, line || meta[:line] || 0)
     end
   end
 
-  defp check_bare_changeset_error(_, _), do: nil
+  defp check_bare_changeset_error(_, _source_file), do: nil
 
   defp find_bare_error(body) do
     body
-    |> flatten()
+    |> IronLawCredo.ASTTraversal.flatten()
     |> Enum.find_value(fn
-      # {:error, _} — bare wildcard
-      {{:error, {:_, _, []}}, _} -> true
-      # {:error, var} where var is a plain atom (not %Changeset{})
-      {{:error, {var, meta, []}}, _} when is_atom(var) ->
-        if var == :changeset or var == :cs do
-          nil  # Likely already pattern-matched as %Changeset{} = cs
-        else
-          meta[:line]
-        end
+      # In case expressions, {:error, _} is represented as error: {:_, ...}
+      {error, {:_, meta, _}} when error == :error ->
+        meta[:line]
+      # Also match tuple form {:error, {:_, ...}}
+      {:error, {:_, meta, _}} ->
+        meta[:line]
+      # {:error, var} as keyword: error: {var, meta, []}
+      {error, {var, meta, _}} when error == :error and is_atom(var) and var != :changeset and var != :cs ->
+        meta[:line]
+      # {:error, var} as tuple
+      {:error, {var, meta, _}} when is_atom(var) and var != :changeset and var != :cs ->
+        meta[:line]
       _ -> nil
     end)
   end
-
-  defp flatten({_, _, children}) when is_list(children) do
-    Enum.flat_map(children, &flatten/1)
-  end
-
-  defp flatten(node) do
-    [node]
-  end
-
-  defp traverse_call(ast, fun) when is_list(ast), do: Enum.flat_map(ast, &traverse_call(&1, fun))
-
-  defp traverse_call(call = {:def, _, [{:handle_event, _, [_]} | _]} = _call, fun) do
-    [fun.(call)] ++ Enum.flat_map(elem(call, 2), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(ast, fun) when is_tuple(ast) do
-    [fun.(ast)] ++ Enum.flat_map(Tuple.to_list(ast), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(_ast, _fun), do: []
 
   defp issue(source_file, line) do
     %Issue{
       filename: source_file.filename,
       line_no: line,
+      trigger: Issue.no_trigger(),
       message: """
       Bare {:error, _} in handle_event — changeset errors are swallowed and the\n" <>
       "form won't re-render validation errors. Match {:error, %Ecto.Changeset{}\n" <>

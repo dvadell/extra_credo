@@ -40,12 +40,13 @@ defmodule Credo.Check.IronLaw.NoFloatForMoney do
 
   @impl true
   def run(%SourceFile{} = source_file, params) do
-    money_kw = get_in(params, [:money_keywords]) || @default_money_kw
-    money_re = Regex.compile!("(?i)(#{join(money_kw, "|")})")
+    IronLawCredo.ASTTraversal.collect_issues(source_file, &issue_for_call_with_source/2)
+  end
 
-    Map.get(source_file, :ast)
-    |> traverse_call(&issue_for_call(&1, money_re, source_file))
-    |> Enum.filter(&(&1 != nil))
+  defp issue_for_call_with_source(ast, source_file) do
+    money_kw = @default_money_kw
+    money_re = Regex.compile!("(?i)(#{join(money_kw, "|")})")
+    issue_for_call(ast, money_re, source_file)
   end
 
   defp issue_for_call({:field, meta, [name, type | _rest]}, money_re, source_file)
@@ -84,26 +85,11 @@ defmodule Credo.Check.IronLaw.NoFloatForMoney do
 
   defp issue_for_call(_ast, _re, _source_file), do: nil
 
-  defp traverse_call(ast, fun) when is_list(ast), do: Enum.flat_map(ast, &traverse_call(&1, fun))
-
-  defp traverse_call(call = {:field, _, [_ | _]} = _call, fun) do
-    [fun.(call)] ++ Enum.flat_map(elem(call, 2), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(call = {:add, _, [_ | _]} = _call, fun) do
-    [fun.(call)] ++ Enum.flat_map(elem(call, 2), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(ast, fun) when is_tuple(ast) do
-    [fun.(ast)] ++ Enum.flat_map(Tuple.to_list(ast), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(_ast, _fun), do: []
-
   defp issue(source_file, field_name, line) do
     %Issue{
       filename: source_file.filename,
       line_no: line,
+      trigger: Issue.no_trigger(),
       message: """
       Field "#{field_name}" appears to be money-related but uses :float.
       Use :decimal or :integer (cents). See Iron Law #4.\n\n" <>
@@ -113,6 +99,6 @@ defmodule Credo.Check.IronLaw.NoFloatForMoney do
     }
   end
 
-  defp join([], _), do: ""
-  defp join(keywords, _), do: Enum.map_join(keywords, &Atom.to_string/1, "|")
+  defp join([], _sep), do: ""
+  defp join(keywords, sep), do: Enum.map_join(keywords, sep, &to_string/1)
 end

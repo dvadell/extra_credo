@@ -32,58 +32,68 @@ defmodule Credo.Check.IronLaw.NoPubsubWithoutConnected do
       []
     end
 
-    Map.get(source_file, :ast)
-    |> traverse_call(&check_subscribe(&1, source_file))
-    |> Enum.filter(&(&1 != nil))
+    IronLawCredo.ASTTraversal.collect_issues_with_path(source_file, &check_subscribe/3)
   end
 
-  defp check_subscribe({:., _, [{:., _, [:Phoenix, :PubSub]}, :subscribe]} = call, source_file) do
-    if in_connected_guard?(call) do
-      nil
+  defp check_subscribe(call, path, source_file) do
+    if is_subscribe_call?(call) and not in_connected_guard?(path) do
+      issue(source_file, call)
     else
-      issue(source_file, "PubSub.subscribe without connected? guard", call)
+      nil
     end
   end
 
-  defp check_subscribe({:subscribe, meta, _} = call, source_file) do
-    # Unqualified subscribe — likely PubSub
-    if in_connected_guard?(call) do
-      nil
-    else
-      issue(source_file, "PubSub.subscribe without connected? guard", meta)
+  defp is_subscribe_call?({:., _, [inner, :subscribe]}) do
+    case inner do
+      {:., _, [:Phoenix, :PubSub]} -> true
+      _ -> false
     end
   end
 
-  defp check_subscribe(_, _), do: nil
+  defp is_subscribe_call?({:subscribe, _, _}), do: true
+  defp is_subscribe_call?(_), do: false
 
-  defp in_connected_guard?(_call) do
-    # This is a simplified check — we look for connected? anywhere in the AST path.
-    # In practice, the check relies on the fact that subscribe inside an if(connected?)
-    # block will have the if/connected? as an ancestor. Since traverse_call is flat,
-    # we use a heuristic: if the file contains connected? at all, we assume it's used.
-    # For more precise checking, use the full AST walker.
-    true  # Conservative: don't flag unless we can prove it's outside connected?
+  defp in_connected_guard?(path) do
+    Enum.any?(path, &has_connected_guard?/1)
   end
 
-  defp traverse_call(ast, fun) when is_list(ast), do: Enum.flat_map(ast, &traverse_call(&1, fun))
-
-  defp traverse_call(ast, fun) when is_tuple(ast) do
-    [fun.(ast)] ++ Enum.flat_map(Tuple.to_list(ast), &traverse_call(&1, fun))
+  defp has_connected_guard?({:if, _, [condition | _]}) do
+    is_connected_call?(condition)
   end
 
-  defp traverse_call(_ast, _fun), do: []
+  defp has_connected_guard?(_), do: false
 
-  defp issue(source_file, _message, meta) do
+  defp is_connected_call?({:connected, _, args}) when is_list(args), do: true
+
+  defp is_connected_call?({:., _, [inner, :connected, args]})
+       when is_list(args) do
+    case inner do
+      {:., _, [:Phoenix, :LiveView]} -> true
+      {:., _, [:Phoenix, :LiveView, :Socket]} -> true
+      _ -> false
+    end
+  end
+
+  defp is_connected_call?(_), do: false
+
+  defp issue(source_file, call) do
+    meta = case call do
+      {_, meta, _} when is_map(meta) -> meta
+      _ -> %{}
+    end
+
     %Issue{
       filename: source_file.filename,
       line_no: meta[:line] || 0,
+      column: meta[:column] || 0,
+      trigger: Issue.no_trigger(),
       message: """
       PubSub.subscribe called without connected? guard. Mount runs twice, causing\n" <>
       "double-delivery. Wrap in `if connected?(socket) do ... end`.\n\n" <>
       "  if connected?(socket) do\n" <>
       "    Phoenix.PubSub.subscribe(MyApp.PubSub, \"topic\")\n" <>
       "  end\n"
-    """
+      """
     }
   end
 end

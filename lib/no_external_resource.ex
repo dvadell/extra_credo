@@ -22,51 +22,42 @@ defmodule Credo.Check.IronLaw.NoExternalResource do
 
   @impl true
   def run(%SourceFile{} = source_file, _params) do
-    Map.get(source_file, :ast)
-    |> traverse_call(&check_file_read(&1, source_file))
-    |> Enum.filter(&(&1 != nil))
+    IronLawCredo.ASTTraversal.collect_issues(source_file, &check_file_read/2)
   end
 
-  defp check_file_read({:., _, [:File, func]} = call, source_file)
+  defp check_file_read({:., meta, [{:__aliases__, _, [file]}, func]}, source_file)
        when func in [:read!, :read, :stream!, :stream] do
-    # Check if this is at module level (compile time) and @external_resource
-    # is declared before it. We track this via state in the traversal.
-    # For simplicity, we flag all File.read! at module level and let the user
-    # verify @external_resource is present.
-    meta = extract_meta(call)
-
-    if meta[:line] && meta[:column] do
-      # Heuristic: if the call is at the top level of a module (no enclosing def/defp),
-      # it's likely compile-time. We flag it for review.
-      issue(source_file, func, meta)
-    else
-      nil
+    cond do
+      file == :File -> issue(source_file, func, meta)
+      true -> nil
     end
   end
 
-  defp check_file_read(_, _), do: nil
-
-  defp extract_meta({:., meta, [_mod, _func, _args]}) do
-    meta
-  end
-
-  defp traverse_call(ast, fun) when is_list(ast), do: Enum.flat_map(ast, &traverse_call(&1, fun))
-
-  defp traverse_call(call = {:., _, [:File, func | _]} = _call, fun)
+  defp check_file_read({:., meta, [{{:., _, [file, func]}, _, _}]}, source_file)
        when func in [:read!, :read, :stream!, :stream] do
-    [fun.(call)] ++ Enum.flat_map(elem(call, 2), &traverse_call(&1, fun))
+    cond do
+      file == :File -> issue(source_file, func, meta)
+      is_tuple(file) and tl(Tuple.to_list(file)) == [:File] -> issue(source_file, func, meta)
+      true -> nil
+    end
   end
 
-  defp traverse_call(ast, fun) when is_tuple(ast) do
-    [fun.(ast)] ++ Enum.flat_map(Tuple.to_list(ast), &traverse_call(&1, fun))
+  defp check_file_read({:., meta, [{:., _, [file, func]} | _]}, source_file)
+       when func in [:read!, :read, :stream!, :stream] do
+    cond do
+      file == :File -> issue(source_file, func, meta)
+      is_tuple(file) and tl(Tuple.to_list(file)) == [:File] -> issue(source_file, func, meta)
+      true -> nil
+    end
   end
 
-  defp traverse_call(_ast, _fun), do: []
+  defp check_file_read(_, _source_file), do: nil
 
   defp issue(source_file, func, meta) do
     %Issue{
       filename: source_file.filename,
       line_no: meta[:line] || 0,
+      trigger: Issue.no_trigger(),
       message: """
       File.#{func}/1 at module level without @external_resource. The module will\n" <>
       "not recompile when the file changes. Add @external_resource before the read.\n\n" <>

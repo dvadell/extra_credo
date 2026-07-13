@@ -25,12 +25,10 @@ defmodule Credo.Check.IronLaw.ObanAtomKeys do
       []
     end
 
-    Map.get(source_file, :ast)
-    |> traverse_call(&check_oban_atom_keys(&1, source_file))
-    |> Enum.filter(&(&1 != nil))
+    IronLawCredo.ASTTraversal.collect_issues(source_file, &check_oban_atom_keys/2)
   end
 
-  defp check_oban_atom_keys({:def, meta, [{:perform, _, [arg]} | _]} = _call, source_file) do
+  defp check_oban_atom_keys({:def, meta, [{:perform, _, [arg]} | _]}, source_file) do
     oban_args = extract_oban_args(arg)
 
     case oban_args do
@@ -39,7 +37,7 @@ defmodule Credo.Check.IronLaw.ObanAtomKeys do
     end
   end
 
-  defp check_oban_atom_keys(_, _), do: nil
+  defp check_oban_atom_keys(_, _source_file), do: nil
 
   defp extract_oban_args({:%, _, [struct_info, fields]}) do
     # Check if struct is Oban.Job
@@ -101,22 +99,11 @@ defmodule Credo.Check.IronLaw.ObanAtomKeys do
 
   defp find_atom_keys(_, _, _), do: nil
 
-  defp traverse_call(ast, fun) when is_list(ast), do: Enum.flat_map(ast, &traverse_call(&1, fun))
-
-  defp traverse_call(call = {:def, _, [{:perform, _, [_]} | _]} = _call, fun) do
-    [fun.(call)] ++ Enum.flat_map(elem(call, 2), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(ast, fun) when is_tuple(ast) do
-    [fun.(ast)] ++ Enum.flat_map(Tuple.to_list(ast), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(_ast, _fun), do: []
-
   defp issue(source_file, key, meta) do
     %Issue{
       filename: source_file.filename,
       line_no: meta[:line] || 0,
+      trigger: Issue.no_trigger(),
       message: """
       Oban worker uses atom key #{key} in args pattern. Oban serializes args as\n" <>
       "JSON (string keys). Use \"#{key}\" => instead of #{key}:.\n\n" <>

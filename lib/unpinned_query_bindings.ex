@@ -22,25 +22,23 @@ defmodule Credo.Check.IronLaw.UnpinnedQueryBindings do
 
   @impl true
   def run(%SourceFile{} = source_file, _params) do
-    Map.get(source_file, :ast)
-    |> traverse_call(&check_unpinned(&1, source_file))
-    |> Enum.filter(&(&1 != nil))
+    IronLawCredo.ASTTraversal.collect_issues(source_file, &check_unpinned/2)
   end
 
   # Detect from(x in Schema, ...) comprehensions
-  defp check_unpinned({:from, meta, [clause | filters]} = _call, source_file) do
+  defp check_unpinned({:from, meta, [clause | filters]}, source_file) do
     bindings = extract_bindings(clause)
 
-    Enum.flat_map(filters, fn filter ->
-      find_unpinned_vars(filter, bindings, meta, source_file)
-    end)
-    |> case do
-      [] -> nil
-      issues -> hd(issues)  # Report first issue per from clause
+    issues = Enum.flat_map(filters, &find_unpinned_vars(&1, bindings, meta, source_file))
+
+    if Enum.empty?(issues) do
+      nil
+    else
+      hd(issues)
     end
   end
 
-  defp check_unpinned(_, _), do: nil
+  defp check_unpinned(_, _source_file), do: nil
 
   defp extract_bindings({:-, _, [{:"{}" , _, bindings, _}, _]}) do
     Enum.map(bindings, &elem(&1, 0))
@@ -89,22 +87,11 @@ defmodule Credo.Check.IronLaw.UnpinnedQueryBindings do
     find_unpinned_vars(ast, bindings, meta, source_file)
   end
 
-  defp traverse_call(ast, fun) when is_list(ast), do: Enum.flat_map(ast, &traverse_call(&1, fun))
-
-  defp traverse_call(call = {:from, _, [_ | _]} = _call, fun) do
-    [fun.(call)] ++ Enum.flat_map(elem(call, 2), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(ast, fun) when is_tuple(ast) do
-    [fun.(ast)] ++ Enum.flat_map(Tuple.to_list(ast), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(_ast, _fun), do: []
-
   defp issue(source_file, var, meta) do
     %Issue{
       filename: source_file.filename,
       line_no: meta[:line] || 0,
+      trigger: Issue.no_trigger(),
       message: """
       Variable #{var} used in Ecto query without ^ pin operator.\n" <>
       "Use ^#{var} to bind outer-scope variables. Unpinned variables are treated\n" <>

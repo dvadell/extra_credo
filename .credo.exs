@@ -1,0 +1,88 @@
+%{
+  configs: [
+    %{
+      name: "default",
+      files: %{
+        included: [
+          "lib/",
+          "src/",
+          "test/",
+          "web/",
+          "apps/"
+        ],
+        excluded: []
+      },
+      plugins: [],
+      requires: [],
+      strict: false,
+      parse_timeout: 5000,
+      color: true,
+      checks: %{
+        disabled: [
+          {Credo.Check.Refactor.MapInto, []}
+        ],
+        enabled: [
+          # --- Readability ---
+          {Credo.Check.Readability.AliasAs, []},
+          {Credo.Check.Readability.AliasOrder, []},
+          {Credo.Check.Readability.BlockPipe, []},
+          {Credo.Check.Readability.FunctionNames, []},
+          {Credo.Check.Readability.MaxLineLength, [priority: :low, max_length: 120]},
+          {Credo.Check.Readability.ModuleAttributeNames, []},
+          {Credo.Check.Readability.ModuleDoc, []},
+          {Credo.Check.Readability.ModuleNames, []},
+          {Credo.Check.Readability.ParenthesesInCondition, []},
+          {Credo.Check.Readability.PipeAtEndOfChain, []},
+          {Credo.Check.Readability.PreferImplicitTry, []},
+          {Credo.Check.Readability.PredicateFunctionNames, [priority: :low]},
+          {Credo.Check.Readability.MultiAlias, []},
+          {Credo.Check.Readability.Semicolons, []},
+          {Credo.Check.Readability.SpaceAfterCommas, []},
+          {Credo.Check.Readability.StringSigils, []},
+          {Credo.Check.Readability.TrailingBlankLine, []},
+          {Credo.Check.Readability.TrailingWhiteSpace, []},
+          {Credo.Check.Readability.UnnecessaryAliasExpansion, []},
+          {Credo.Check.Readability.VariableNames, []},
+          {Credo.Check.Readability.StrictModuleLayout, [priority: :low]},
+
+          # --- Refactoring ---
+          {Credo.Check.Refactor.Apply, []},
+          {Credo.Check.Refactor.CondStatements, []},
+          {Credo.Check.Refactor.FilterCount, []},
+          {Credo.Check.Refactor.IoPuts, []},
+          {Credo.Check.Refactor.MatchInCondition, []},
+          {Credo.Check.Refactor.NegatedConditionsInUnless, []},
+          {Credo.Check.Refactor.Nesting, [max_nesting: 3]},
+          {Credo.Check.Refactor.RedundantWithClauseResult, []},
+          {Credo.Check.Refactor.UnlessWithElse, []},
+          {Credo.Check.Refactor.VariableRebinding, []},
+
+          # --- Consistency ---
+          {Credo.Check.Consistency.MultiAliasImportRequireUse, []},
+          {Credo.Check.Consistency.ParameterPatternMatching, [priority: :low]},
+          {Credo.Check.Consistency.SpaceAroundOperators, []},
+
+          # --- Design ---
+          {Credo.Check.Design.AliasUsage, []},
+          {Credo.Check.Design.TagTODO, [exit_status: 2]},
+          {Credo.Check.Design.TagFIXME, []},
+          {Credo.Check.Design.DuplicatedCode, []},
+
+          # --- Custom Iron Law Checks ---
+          {Credo.Check.IronLaw.NoFloatForMoney, []},
+          {Credo.Check.IronLaw.NoBareChangesetError, []},
+          {Credo.Check.IronLaw.NoAssignNewInMount, []},
+          {Credo.Check.IronLaw.NoAuthInHandleEvent, []},
+          {Credo.Check.IronLaw.NoExternalResource, []},
+          {Credo.Check.IronLaw.NoImplicitCrossJoin, []},
+          {Credo.Check.IronLaw.NoPubsubWithoutConnected, []},
+          {Credo.Check.IronLaw.NoRawUntrusted, []},
+          {Credo.Check.IronLaw.ObanAtomKeys, []},
+          {Credo.Check.IronLaw.ObanStructInArgs, []},
+          {Credo.Check.IronLaw.StringToAtom, []},
+          {Credo.Check.IronLaw.UnpinnedQueryBindings, []}
+        ]
+      }
+    }
+  ]
+}

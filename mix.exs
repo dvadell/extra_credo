@@ -8,7 +8,7 @@ defmodule IronLawCredo.MixProject do
       elixir: "~> 1.19",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      description: "Custom Credo checks for Iron Laws",
+      description: "Custom Credo checks enforcing Iron Laws for Elixir/Phoenix projects",
       package: package()
     ]
   end
@@ -21,16 +21,17 @@ defmodule IronLawCredo.MixProject do
 
   defp deps do
     [
-      {:credo, "~> 1.7"}
+      {:credo, "~> 1.7"},
+      {:dialyxir, "~> 1.4", only: :dev, runtime: false}
     ]
   end
 
   defp package do
     [
       files: ["lib", "mix.exs", "README.md"],
-      maintainers: ["You"],
+      maintainers: ["Iron Law Credo Contributors"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/youruser/elixir-credo-checks"}
+      links: %{"GitHub" => "https://github.com/iron-law/elixir-credo-checks"}
     ]
   end
 end

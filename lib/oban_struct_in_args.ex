@@ -20,35 +20,33 @@ defmodule Credo.Check.IronLaw.ObanStructInArgs do
 
   @impl true
   def run(%SourceFile{} = source_file, _params) do
-    Map.get(source_file, :ast)
-    |> traverse_call(&check_struct_in_args(&1, source_file))
-    |> Enum.filter(&(&1 != nil))
+    IronLawCredo.ASTTraversal.collect_issues(source_file, &check_struct_in_args/2)
   end
 
-  defp check_struct_in_args({:., _, [{:., _, [:Oban, :insert!]}, :insert!, [_ | args]]} = call, source_file) do
+  defp check_struct_in_args({:., _, [{:., _, [:Oban, :insert!]}, :insert!, [_ | args]]}, source_file) do
     case extract_args_from_call(args) do
       nil -> nil
-      args_ast -> find_structs(args_ast, call, source_file)
+      args_ast -> find_structs(args_ast, args, source_file)
     end
   end
 
-  defp check_struct_in_args({:., _, [mod, :perform_async]} = call, source_file)
+  defp check_struct_in_args({:., _, [mod, :perform_async | args]}, source_file)
        when is_atom(mod) do
-    case extract_args_from_call(elem(call, 2)) do
+    case extract_args_from_call(args) do
       nil -> nil
-      args_ast -> find_structs(args_ast, call, source_file)
+      args_ast -> find_structs(args_ast, args, source_file)
     end
   end
 
-  defp check_struct_in_args({:., _, [mod, :new]} = call, source_file)
+  defp check_struct_in_args({:., _, [mod, :new | args]}, source_file)
        when is_atom(mod) do
-    case extract_args_from_call(elem(call, 2)) do
+    case extract_args_from_call(args) do
       nil -> nil
-      args_ast -> find_structs(args_ast, call, source_file)
+      args_ast -> find_structs(args_ast, args, source_file)
     end
   end
 
-  defp check_struct_in_args(_, _), do: nil
+  defp check_struct_in_args(_, _source_file), do: nil
 
   defp extract_args_from_call([arg]) do
     case arg do
@@ -100,30 +98,6 @@ defmodule Credo.Check.IronLaw.ObanStructInArgs do
 
   defp is_struct_like?(_), do: false
 
-  defp traverse_call(ast, fun) when is_list(ast), do: Enum.flat_map(ast, &traverse_call(&1, fun))
-
-  defp traverse_call(call = {:., _, [{:., _, [:Oban, :insert!]} | _]} = _call, fun) do
-    [fun.(call)] ++ Enum.flat_map(elem(call, 2), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(call = {:., _, [_mod, :perform_async | _]} = _call, fun) do
-    [fun.(call)] ++ Enum.flat_map(elem(call, 2), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(call = {:., _, [_mod, :new | _]} = _call, fun) do
-    [fun.(call)] ++ Enum.flat_map(elem(call, 2), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(call = {:., _, [_mod, :insert! | _]} = _call, fun) do
-    [fun.(call)] ++ Enum.flat_map(elem(call, 2), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(ast, fun) when is_tuple(ast) do
-    [fun.(ast)] ++ Enum.flat_map(Tuple.to_list(ast), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(_ast, _fun), do: []
-
   defp issue(source_file, _key, value, call) do
     module = case value do
       {:module, _, [name]} -> to_string(name)
@@ -134,6 +108,7 @@ defmodule Credo.Check.IronLaw.ObanStructInArgs do
     %Issue{
       filename: source_file.filename,
       line_no: line_from_ast(call),
+      trigger: Issue.no_trigger(),
       message: """
       Oban args contain struct #{module}. Oban serializes args to JSON, losing\n" <>
       "the __struct__ field. Store an ID and fetch the struct in perform/1.\n\n" <>

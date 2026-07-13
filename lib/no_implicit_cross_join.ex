@@ -20,12 +20,10 @@ defmodule Credo.Check.IronLaw.NoImplicitCrossJoin do
 
   @impl true
   def run(%SourceFile{} = source_file, _params) do
-    Map.get(source_file, :ast)
-    |> traverse_call(&check_cross_join(&1, source_file))
-    |> Enum.filter(&(&1 != nil))
+    IronLawCredo.ASTTraversal.collect_issues(source_file, &check_cross_join/2)
   end
 
-  defp check_cross_join({:from, meta, [clause | filters]} = _call, source_file) do
+  defp check_cross_join({:from, meta, [clause | filters]}, source_file) do
     binding_count = count_bindings(clause)
     has_explicit_join? = Enum.any?(filters, &is_join_clause?/1)
 
@@ -36,7 +34,7 @@ defmodule Credo.Check.IronLaw.NoImplicitCrossJoin do
     end
   end
 
-  defp check_cross_join(_, _), do: nil
+  defp check_cross_join(_, _source_file), do: nil
 
   defp count_bindings({:-, _, [{:{}, _, bindings, _}, _]}) do
     length(bindings)
@@ -58,22 +56,11 @@ defmodule Credo.Check.IronLaw.NoImplicitCrossJoin do
     false
   end
 
-  defp traverse_call(ast, fun) when is_list(ast), do: Enum.flat_map(ast, &traverse_call(&1, fun))
-
-  defp traverse_call(call = {:from, _, [_ | _]} = _call, fun) do
-    [fun.(call)] ++ Enum.flat_map(elem(call, 2), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(ast, fun) when is_tuple(ast) do
-    [fun.(ast)] ++ Enum.flat_map(Tuple.to_list(ast), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(_ast, _fun), do: []
-
   defp issue(source_file, meta) do
     %Issue{
       filename: source_file.filename,
       line_no: meta[:line] || 0,
+      trigger: Issue.no_trigger(),
       message: """
       Implicit cross join detected — from(a in A, b in B) without join: on: ...
       creates a Cartesian product. Use explicit join with an on: condition.\n\n" <>

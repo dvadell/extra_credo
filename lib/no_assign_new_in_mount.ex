@@ -30,49 +30,27 @@ defmodule Credo.Check.IronLaw.NoAssignNewInMount do
       []
     end
 
-    Map.get(source_file, :ast)
-    |> traverse_call(&check_assign_new_in_mount(&1, source_file))
-    |> Enum.filter(&(&1 != nil))
+    IronLawCredo.ASTTraversal.collect_issues(source_file, &check_assign_new_in_mount/2)
   end
 
-  defp check_assign_new_in_mount({:def, meta, [{:mount, _, [_params, _session, _socket]} | body]} = _call, source_file) do
+  defp check_assign_new_in_mount({:def, meta, [{:mount, _, [_params, _session, _socket]} | body]}, source_file) do
     case find_assign_new(body) do
       nil -> nil
       {key, line} -> issue(source_file, key, line || meta[:line] || 0)
     end
   end
 
-  defp check_assign_new_in_mount(_, _), do: nil
+  defp check_assign_new_in_mount(_, _source_file), do: nil
 
   defp find_assign_new(body) do
     body
-    |> flatten()
+    |> IronLawCredo.ASTTraversal.flatten()
     |> Enum.find_value(fn
       {:assign_new, meta, [key, _]} -> {key, meta[:line]}
       {:., _, [{:., _, [{:., _, [:Phoenix, :LiveView]}, :Socket]}, :assign_new]} -> {:unknown, nil}
       _ -> nil
     end)
   end
-
-  defp flatten({_, _, children}) when is_list(children) do
-    Enum.flat_map(children, &flatten/1)
-  end
-
-  defp flatten(node) do
-    [node]
-  end
-
-  defp traverse_call(ast, fun) when is_list(ast), do: Enum.flat_map(ast, &traverse_call(&1, fun))
-
-  defp traverse_call(call = {:def, _, [{:mount, _, [_]} | _]} = _call, fun) do
-    [fun.(call)] ++ Enum.flat_map(elem(call, 2), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(ast, fun) when is_tuple(ast) do
-    [fun.(ast)] ++ Enum.flat_map(Tuple.to_list(ast), &traverse_call(&1, fun))
-  end
-
-  defp traverse_call(_ast, _fun), do: []
 
   defp issue(source_file, key, line) do
     key_str = case key do
@@ -84,6 +62,7 @@ defmodule Credo.Check.IronLaw.NoAssignNewInMount do
     %Issue{
       filename: source_file.filename,
       line_no: line,
+      trigger: Issue.no_trigger(),
       message: """
       assign_new(:#{key_str}) in mount — value won't refresh on subsequent visits.\n" <>
       "assign_new/3 skips if the key exists, causing stale data. Use assign/3\n" <>

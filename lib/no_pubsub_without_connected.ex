@@ -1,6 +1,10 @@
-defmodule Credo.Check.IronLaw.NoPubsubWithoutConnected do
+defmodule Credo.Check.Extra.NoPubsubWithoutConnected do
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
+
   @moduledoc """
-  Iron Law #3: CHECK `connected?/1` before PubSub subscribe.
+  Extra Rule #3: CHECK `connected?/1` before PubSub subscribe.
 
   Mount runs twice (init + socket connected). Unconditional `subscribe/3` calls
   cause double-delivery of messages. Every subscribe must be inside a
@@ -23,19 +27,21 @@ defmodule Credo.Check.IronLaw.NoPubsubWithoutConnected do
       end
   """
 
-  use Credo.Check, [category: :consistency,
-    exit_status: 2]
+  use Credo.Check,
+    category: :consistency,
+    exit_status: 2
 
+  @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
   @impl true
   def run(%SourceFile{} = source_file, _params) do
-    unless String.ends_with?(source_file.filename, "_live.ex") do
+    if String.ends_with?(source_file.filename, "_live.ex") do
+      ASTTraversal.collect_issues_with_path(source_file, &check_subscribe/3)
+    else
       []
     end
-
-    IronLawCredo.ASTTraversal.collect_issues_with_path(source_file, &check_subscribe/3)
   end
 
-  defp check_subscribe(call, path, source_file) do
+  defp check_subscribe(call, path, source_file) when is_tuple(call) do
     if is_subscribe_call?(call) and not in_connected_guard?(path) do
       issue(source_file, call)
     else
@@ -45,7 +51,7 @@ defmodule Credo.Check.IronLaw.NoPubsubWithoutConnected do
 
   defp is_subscribe_call?({:., _, [inner, :subscribe]}) do
     case inner do
-      {:., _, [:Phoenix, :PubSub]} -> true
+      {:__aliases__, _, [:Phoenix, :PubSub]} -> true
       _ -> false
     end
   end
@@ -63,13 +69,12 @@ defmodule Credo.Check.IronLaw.NoPubsubWithoutConnected do
 
   defp has_connected_guard?(_), do: false
 
-  defp is_connected_call?({:connected, _, args}) when is_list(args), do: true
+  defp is_connected_call?({:connected?, _, args}) when is_list(args), do: true
 
-  defp is_connected_call?({:., _, [inner, :connected, args]})
-       when is_list(args) do
+  defp is_connected_call?({{:., _, [inner, :connected?]}, _, _args}) do
     case inner do
-      {:., _, [:Phoenix, :LiveView]} -> true
-      {:., _, [:Phoenix, :LiveView, :Socket]} -> true
+      {:__aliases__, _, [:Phoenix, :LiveView]} -> true
+      {:__aliases__, _, [:Phoenix, :LiveView, :Socket]} -> true
       _ -> false
     end
   end
@@ -77,10 +82,11 @@ defmodule Credo.Check.IronLaw.NoPubsubWithoutConnected do
   defp is_connected_call?(_), do: false
 
   defp issue(source_file, call) do
-    meta = case call do
-      {_, meta, _} when is_map(meta) -> meta
-      _ -> %{}
-    end
+    meta =
+      case call do
+        {_, meta, _} when is_map(meta) -> meta
+        _ -> %{}
+      end
 
     %Issue{
       filename: source_file.filename,

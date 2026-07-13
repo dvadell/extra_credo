@@ -1,6 +1,10 @@
-defmodule Credo.Check.IronLaw.ObanStructInArgs do
+defmodule Credo.Check.Extra.ObanStructInArgs do
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
+
   @moduledoc """
-  Iron Law #9: NEVER store structs in Oban args — store IDs.
+  Extra Rule #9: NEVER store structs in Oban args — store IDs.
 
   Oban serializes job args to JSON. Structs lose their `__struct__` field and
   become plain maps on deserialization. Store IDs and fetch the struct in
@@ -15,34 +19,44 @@ defmodule Credo.Check.IronLaw.ObanStructInArgs do
       MyApp.Worker.perform_async(%{user_id: user.id})  # ✅ ID in args
   """
 
-  use Credo.Check, [category: :consistency,
-    exit_status: 2]
+  use Credo.Check,
+    category: :consistency,
+    exit_status: 2
 
+  @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
   @impl true
   def run(%SourceFile{} = source_file, _params) do
-    IronLawCredo.ASTTraversal.collect_issues(source_file, &check_struct_in_args/2)
+    ASTTraversal.collect_issues(source_file, &check_struct_in_args/2)
   end
 
-  defp check_struct_in_args({:., _, [{:., _, [:Oban, :insert!]}, :insert!, [_ | args]]}, source_file) do
+  defp check_struct_in_args(
+         {{:., _, [{:__aliases__, _, [:Oban]}, func]}, call_meta, args},
+         source_file
+       )
+       when func in [:insert, :insert!] do
     case extract_args_from_call(args) do
       nil -> nil
-      args_ast -> find_structs(args_ast, args, source_file)
+      args_ast -> find_structs(args_ast, call_meta, source_file)
     end
   end
 
-  defp check_struct_in_args({:., _, [mod, :perform_async | args]}, source_file)
-       when is_atom(mod) do
+  defp check_struct_in_args(
+         {{:., _, [_, :perform_async]}, call_meta, args},
+         source_file
+       ) do
     case extract_args_from_call(args) do
       nil -> nil
-      args_ast -> find_structs(args_ast, args, source_file)
+      args_ast -> find_structs(args_ast, call_meta, source_file)
     end
   end
 
-  defp check_struct_in_args({:., _, [mod, :new | args]}, source_file)
-       when is_atom(mod) do
+  defp check_struct_in_args(
+         {{:., _, [_, :new]}, call_meta, args},
+         source_file
+       ) do
     case extract_args_from_call(args) do
       nil -> nil
-      args_ast -> find_structs(args_ast, args, source_file)
+      args_ast -> find_structs(args_ast, call_meta, source_file)
     end
   end
 
@@ -51,31 +65,39 @@ defmodule Credo.Check.IronLaw.ObanStructInArgs do
   defp extract_args_from_call([arg]) do
     case arg do
       {:%, _, [_, fields]} ->
-        # %Oban.Job{args: ...} — extract args field
-        case List.keyfind(fields, :args, 0) do
+        pairs = if is_list(fields), do: fields, else: elem(fields, 2)
+
+        case List.keyfind(pairs, :args, 0) do
           {:args, args_ast} -> args_ast
           _ -> nil
         end
-      args when is_tuple(args) and elem(args, 0) == :"%{" ->
+
+      {:%{}, _, _} = args ->
         args
-      _ -> nil
+
+      _ ->
+        nil
     end
   end
 
   defp extract_args_from_call(_), do: nil
 
-  defp find_structs(args_ast, call, source_file) when is_tuple(args_ast) do
-    if elem(args_ast, 0) == :"%{" do
+  defp find_structs(args_ast, call_meta, source_file) when is_tuple(args_ast) do
+    if elem(args_ast, 0) == :%{} do
       pairs = elem(args_ast, 2)
-      structs = Enum.filter(pairs, fn
-        {key, value} when is_atom(key) ->
-          is_struct_like?(value)
-        _ -> false
-      end)
+
+      structs =
+        Enum.filter(pairs, fn
+          {key, value} when is_atom(key) ->
+            is_struct_like?(value)
+
+          _ ->
+            false
+        end)
 
       case structs do
         [] -> nil
-        [{key, value} | _] -> issue(source_file, key, value, call)
+        [{key, value} | _] -> issue(source_file, key, value, call_meta)
       end
     else
       nil
@@ -84,44 +106,19 @@ defmodule Credo.Check.IronLaw.ObanStructInArgs do
 
   defp find_structs(_, _, _), do: nil
 
-  defp is_struct_like?({:module, _, [name]}) do
-    String.match?(to_string(name), ~r/^[A-Z]/)
-  end
-
-  defp is_struct_like?({name, _, []}) when is_atom(name) do
-    String.match?(to_string(name), ~r/^[A-Z]/)
-  end
-
-  defp is_struct_like?({:module, _, _}) do
-    true
-  end
-
+  defp is_struct_like?({:%, _, _}), do: true
   defp is_struct_like?(_), do: false
 
-  defp issue(source_file, _key, value, call) do
-    module = case value do
-      {:module, _, [name]} -> to_string(name)
-      {name, _, []} when is_atom(name) -> to_string(name)
-      _ -> "a struct"
-    end
-
+  defp issue(source_file, _key, _value, call_meta) do
     %Issue{
       filename: source_file.filename,
-      line_no: line_from_ast(call),
+      line_no: call_meta[:line] || 0,
       trigger: Issue.no_trigger(),
       message: """
-      Oban args contain struct #{module}. Oban serializes args to JSON, losing\n" <>
-      "the __struct__ field. Store an ID and fetch the struct in perform/1.\n\n" <>
-      "  MyApp.Worker.perform_async(%{user_id: user.id})\n"
-    """
+        Oban args contain a struct. Oban serializes args to JSON, losing\n" <>
+        "the __struct__ field. Store an ID and fetch the struct in perform/1.\n\n" <>
+        "  MyApp.Worker.perform_async(%{user_id: user.id})\n"
+      """
     }
-  end
-
-  defp line_from_ast({_, meta, _}) when is_map(meta) do
-    meta[:line] || 0
-  end
-
-  defp line_from_ast(_) do
-    0
   end
 end

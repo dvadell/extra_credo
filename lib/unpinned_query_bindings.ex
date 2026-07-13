@@ -1,6 +1,10 @@
-defmodule Credo.Check.IronLaw.UnpinnedQueryBindings do
+defmodule Credo.Check.Extra.UnpinnedQueryBindings do
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
+
   @moduledoc """
-  Iron Law #5: ALWAYS pin values with `^` in Ecto queries.
+  Extra Rule #5: ALWAYS pin values with `^` in Ecto queries.
 
   In Ecto query comprehensions, variables from the outer scope must be pinned
   with `^` to prevent them from being treated as column bindings. Unpinned
@@ -17,16 +21,19 @@ defmodule Credo.Check.IronLaw.UnpinnedQueryBindings do
       from(u in User, where: u.id == ^user_id)  # ✅ pinned
   """
 
-  use Credo.Check, [category: :security,
-    exit_status: 2]
+  use Credo.Check,
+    category: :security,
+    exit_status: 2
 
+  @ecto_query_functions ~w(where having order_by group_by select distinct limit offset dynamic)a
+
+  @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
   @impl true
   def run(%SourceFile{} = source_file, _params) do
-    IronLawCredo.ASTTraversal.collect_issues(source_file, &check_unpinned/2)
+    ASTTraversal.collect_issues_with_path(source_file, &check_node/3)
   end
 
-  # Detect from(x in Schema, ...) comprehensions
-  defp check_unpinned({:from, meta, [clause | filters]}, source_file) do
+  defp check_node({:from, meta, [clause | filters]}, _path, source_file) do
     bindings = extract_bindings(clause)
 
     issues = Enum.flat_map(filters, &find_unpinned_vars(&1, bindings, meta, source_file))
@@ -38,9 +45,51 @@ defmodule Credo.Check.IronLaw.UnpinnedQueryBindings do
     end
   end
 
-  defp check_unpinned(_, _source_file), do: nil
+  defp check_node({name, meta, args}, path, source_file)
+       when name in @ecto_query_functions and is_list(args) and length(args) >= 2 do
+    if inside_from?(path) do
+      nil
+    else
+      [bindings_node, expression] = Enum.take(args, -2)
 
-  defp extract_bindings({:-, _, [{:"{}" , _, bindings, _}, _]}) do
+      if is_list(bindings_node) do
+        bindings = extract_bindings_from_list(bindings_node)
+        issues = find_unpinned_vars(expression, bindings, meta, source_file)
+
+        if Enum.empty?(issues) do
+          nil
+        else
+          hd(issues)
+        end
+      else
+        nil
+      end
+    end
+  end
+
+  defp check_node(_, _path, _source_file), do: nil
+
+  defp inside_from?(path) do
+    Enum.any?(path, fn
+      {:from, _, _} -> true
+      _ -> false
+    end)
+  end
+
+  defp extract_bindings_from_list(list) when is_list(list) do
+    list
+    |> Enum.map(fn
+      {name, _, _} when is_atom(name) -> name
+      _ -> nil
+    end)
+    |> Enum.reject(&is_nil/1)
+  end
+
+  defp extract_bindings({:in, _, [binding, _source]}) do
+    [elem(binding, 0)]
+  end
+
+  defp extract_bindings({:-, _, [{:{}, _, bindings, _}, _]}) do
     Enum.map(bindings, &elem(&1, 0))
   end
 
@@ -54,10 +103,14 @@ defmodule Credo.Check.IronLaw.UnpinnedQueryBindings do
 
   defp find_unpinned_vars(ast, bindings, meta, source_file) do
     case ast do
+      # List of sub-expressions (e.g. where clause body)
+      list when is_list(list) ->
+        Enum.flat_map(list, &find_unpinned_vars(&1, bindings, meta, source_file))
+
       # {:==, _, [lhs, rhs]} or {:!=, _, [lhs, rhs]} etc.
       {op, _, [lhs, rhs]} when op in [:==, :!=, :=, :>, :<, :>=, :<=, :in] ->
-        check_side(lhs, bindings, meta, source_file) ++
-          check_side(rhs, bindings, meta, source_file)
+        find_unpinned_vars(lhs, bindings, meta, source_file) ++
+          find_unpinned_vars(rhs, bindings, meta, source_file)
 
       # {:and, _, [a, b]} / {:or, _, [a, b]}
       {op, _, [a, b]} when op in [:and, :or] ->
@@ -65,26 +118,28 @@ defmodule Credo.Check.IronLaw.UnpinnedQueryBindings do
           find_unpinned_vars(b, bindings, meta, source_file)
 
       # ^pinned — OK
-      {:^, _, [_]} -> []
+      {:^, _, [_]} ->
+        []
 
-      # Bare variable not in bindings
-      {var, _, []} when is_atom(var) ->
-        if var not in bindings and var not in [:true, :false, :nil, :__MODULE__] do
+      # Bare variable not in bindings (context is nil or [])
+      {var, _, ctx} when is_atom(var) and ctx in [nil, []] ->
+        if var not in bindings and var not in [true, false, nil, :__MODULE__] do
           [issue(source_file, var, meta)]
         else
           []
         end
 
+      # Keyword list item: {:where, [...]} etc. — recurse into value
+      {key, value} when is_atom(key) ->
+        find_unpinned_vars(value, bindings, meta, source_file)
+
       # Tuple with children
       {_, _, children} when is_list(children) ->
         Enum.flat_map(children, &find_unpinned_vars(&1, bindings, meta, source_file))
 
-      _ -> []
+      _ ->
+        []
     end
-  end
-
-  defp check_side(ast, bindings, meta, source_file) do
-    find_unpinned_vars(ast, bindings, meta, source_file)
   end
 
   defp issue(source_file, var, meta) do
@@ -93,11 +148,11 @@ defmodule Credo.Check.IronLaw.UnpinnedQueryBindings do
       line_no: meta[:line] || 0,
       trigger: Issue.no_trigger(),
       message: """
-      Variable #{var} used in Ecto query without ^ pin operator.\n" <>
-      "Use ^#{var} to bind outer-scope variables. Unpinned variables are treated\n" <>
-      "as column references, which can cause SQL injection.\n\n" <>
-      "  from(u in User, where: u.id == ^#{var})\n"
-    """
+        Variable #{var} used in Ecto query without ^ pin operator.\n" <>
+        "Use ^#{var} to bind outer-scope variables. Unpinned variables are treated\n" <>
+        "as column references, which can cause SQL injection.\n\n" <>
+        "  from(u in User, where: u.id == ^#{var})\n"
+      """
     }
   end
 end

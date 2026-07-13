@@ -1,15 +1,17 @@
-# IronLawCredo
+# ExtraCredo
 
-Custom Credo checks that enforce the Iron Laws for Elixir/Phoenix projects.
+> **Note:** These Credo checks were originally developed from rules documented at [github.com/oliver-kriska/claude-elixir-phoenix](https://github.com/oliver-kriska/claude-elixir-phoenix).
+
+Custom Credo checks that enforce best practices for Elixir/Phoenix projects.
 
 ## Installation
 
-Add `iron_law_credo` to your list of dependencies in `mix.exs`:
+Add `extra_credo` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:iron_law_credo, "~> 0.1.0"}
+    {:extra_credo, "~> 0.1.0"}
   ]
 end
 ```
@@ -22,18 +24,17 @@ Then register the checks in `.credo.exs`:
     %{
       checks: %{
         enabled: [
-          {Credo.Check.IronLaw.NoFloatForMoney, []},
-          {Credo.Check.IronLaw.NoBareChangesetError, []},
-          {Credo.Check.IronLaw.NoAssignNewInMount, []},
-          {Credo.Check.IronLaw.NoAuthInHandleEvent, []},
-          {Credo.Check.IronLaw.NoExternalResource, []},
-          {Credo.Check.IronLaw.NoImplicitCrossJoin, []},
-          {Credo.Check.IronLaw.NoPubsubWithoutConnected, []},
-          {Credo.Check.IronLaw.NoRawUntrusted, []},
-          {Credo.Check.IronLaw.ObanAtomKeys, []},
-          {Credo.Check.IronLaw.ObanStructInArgs, []},
-          {Credo.Check.IronLaw.StringToAtom, []},
-          {Credo.Check.IronLaw.UnpinnedQueryBindings, []}
+          {Credo.Check.Extra.NoFloatForMoney, []},
+          {Credo.Check.Extra.NoBareChangesetError, []},
+          {Credo.Check.Extra.NoAssignNewInMount, []},
+          {Credo.Check.Extra.NoAuthInHandleEvent, []},
+          {Credo.Check.Extra.NoExternalResource, []},
+          {Credo.Check.Extra.NoImplicitCrossJoin, []},
+          {Credo.Check.Extra.NoPubsubWithoutConnected, []},
+          {Credo.Check.Extra.NoRawUntrusted, []},
+          {Credo.Check.Extra.ObanAtomKeys, []},
+          {Credo.Check.Extra.ObanStructInArgs, []},
+          {Credo.Check.Extra.UnpinnedQueryBindings, []}
         ]
       }
     }
@@ -43,26 +44,40 @@ Then register the checks in `.credo.exs`:
 
 ## Available Checks
 
-| Check | Iron Law | Category |
-|---|---|---|
-| `NoFloatForMoney` | #4 — Never use `:float` for money | Design |
-| `UnpinnedQueryBindings` | #5 — Always pin with `^` in Ecto queries | Security |
-| `ObanAtomKeys` | #8 — Oban args use string keys | Consistency |
-| `ObanStructInArgs` | #9 — Store IDs, not structs in Oban args | Consistency |
-| `StringToAtom` | #10 — No `String.to_atom` on user input | Security |
-| `NoAuthInHandleEvent` | #11 — Authorize in every `handle_event` | Security |
-| `NoRawUntrusted` | #12 — Never `raw/1` with untrusted content | Security |
-| `NoImplicitCrossJoin` | #15 — No implicit cross joins in Ecto | Design |
-| `NoExternalResource` | #16 — `@external_resource` for compile-time files | Consistency |
-| `NoPubsubWithoutConnected` | #3 — Check `connected?` before PubSub subscribe | Consistency |
-| `NoAssignNewInMount` | #21 — Never `assign_new` for values refreshed every mount | Consistency |
-| `NoBareChangesetError` | #24 — Match `{:error, %Ecto.Changeset{}}` explicitly | Consistency |
+### Extra rules
+
+| Check | What it does |
+|---|---|
+| `NoPubsubWithoutConnected` | Flags `Phoenix.PubSub.subscribe` calls in LiveView callbacks that aren't guarded by `connected?`, preventing double-delivery. |
+| `NoFloatForMoney` | Flags `:float` type used for money-related fields in Ecto schemas and migrations. Use `:decimal` or `:integer` instead. |
+| `UnpinnedQueryBindings` | Flags Ecto query variables used without the `^` pin operator, preventing SQL injection risks. |
+| `ObanAtomKeys` | Flags atom keys in Oban job args patterns. Oban serializes to JSON (string keys), so atom key matching always fails. |
+| `ObanStructInArgs` | Flags structs passed as Oban job args. Structs lose their `__struct__` field during JSON serialization. |
+| `NoAuthInHandleEvent` | Ensures every LiveView `handle_event` callback contains an authorization check, since mount-time authorization can be bypassed via WebSocket. |
+| `NoRawUntrusted` | Flags `raw/1` calls with potentially untrusted input to prevent XSS vulnerabilities. |
+| `NoImplicitCrossJoin` | Flags Ecto queries with multiple `from` bindings missing explicit `join` clauses, preventing Cartesian products. |
+| `NoExternalResource` | Flags compile-time file reads (`File.read!`, etc.) at the module level that lack a corresponding `@external_resource` declaration. |
+| `NoAssignNewInMount` | Flags `assign_new` usage in `mount/3` for values that should be refreshed on every page load. |
+| `NoBareChangesetError` | Flags bare `{:error, _}` pattern matches in `handle_event` that swallow changeset errors and prevent form re-render. |
+
+### DMV Rules
+
+| Check | What it does |
+|---|---|
+| `NoDbQueryInMount` | Flags unconditional database queries in `mount/3` that aren't guarded by `connected?`, preventing duplicate queries. |
+| `NoNonIdempotentJobs` | Flags bang variants of Ecto repo functions (`insert!`, `update!`, `delete!`) in Oban `perform` functions, since jobs may be retried. |
+| `NoDedupBeforeCastAssoc` | Flags `cast_assoc` calls that aren't preceded by deduplication of the input list, preventing duplicate associated records. |
+| `NoUnsupervisedProcesses` | Flags `GenServer.start_link`, `Agent.start_link`, `Task.start` outside of a supervisor's children list. |
+| `NoDirectThirdPartyCalls` | Flags direct calls to third-party libraries (HTTPoison, Tesla, ExAws, etc.) in context modules. Wrap them in dedicated modules. |
+| `NoLocaleInTaskClosure` | Flags Gettext calls inside `Task.async` closures that don't capture the caller's locale first, preventing wrong-locale bugs. |
+| `NoCommentsAsCommitMessages` | Flags TODO, FIXME, HACK, XXX comments and issue/PR references that belong in commit messages, not source code. |
 
 ## Development
 
 ```bash
 mix compile
-mix test
+mix format
 mix credo
 mix dialyzer
+MIX_ENV=test mix test
 ```

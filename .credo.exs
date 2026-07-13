@@ -18,9 +18,7 @@
       parse_timeout: 5000,
       color: true,
       checks: %{
-        disabled: [
-          {Credo.Check.Refactor.MapInto, []}
-        ],
+        disabled: [],
         enabled: [
           # --- Readability ---
           {Credo.Check.Readability.AliasAs, []},
@@ -32,7 +30,6 @@
           {Credo.Check.Readability.ModuleDoc, []},
           {Credo.Check.Readability.ModuleNames, []},
           {Credo.Check.Readability.ParenthesesInCondition, []},
-          {Credo.Check.Readability.PipeAtEndOfChain, []},
           {Credo.Check.Readability.PreferImplicitTry, []},
           {Credo.Check.Readability.PredicateFunctionNames, [priority: :low]},
           {Credo.Check.Readability.MultiAlias, []},
@@ -68,19 +65,25 @@
           {Credo.Check.Design.TagFIXME, []},
           {Credo.Check.Design.DuplicatedCode, []},
 
-          # --- Custom Iron Law Checks ---
-          {Credo.Check.IronLaw.NoFloatForMoney, []},
-          {Credo.Check.IronLaw.NoBareChangesetError, []},
-          {Credo.Check.IronLaw.NoAssignNewInMount, []},
-          {Credo.Check.IronLaw.NoAuthInHandleEvent, []},
-          {Credo.Check.IronLaw.NoExternalResource, []},
-          {Credo.Check.IronLaw.NoImplicitCrossJoin, []},
-          {Credo.Check.IronLaw.NoPubsubWithoutConnected, []},
-          {Credo.Check.IronLaw.NoRawUntrusted, []},
-          {Credo.Check.IronLaw.ObanAtomKeys, []},
-          {Credo.Check.IronLaw.ObanStructInArgs, []},
-          {Credo.Check.IronLaw.StringToAtom, []},
-          {Credo.Check.IronLaw.UnpinnedQueryBindings, []}
+          # --- Custom Extra Checks ---
+          {Credo.Check.Extra.NoFloatForMoney, []},
+          {Credo.Check.Extra.NoBareChangesetError, []},
+          {Credo.Check.Extra.NoAssignNewInMount, []},
+          {Credo.Check.Extra.NoAuthInHandleEvent, []},
+          {Credo.Check.Extra.NoExternalResource, []},
+          {Credo.Check.Extra.NoImplicitCrossJoin, []},
+          {Credo.Check.Extra.NoPubsubWithoutConnected, []},
+          {Credo.Check.Extra.NoRawUntrusted, []},
+          {Credo.Check.Extra.ObanAtomKeys, []},
+          {Credo.Check.Extra.ObanStructInArgs, []},
+          {Credo.Check.Extra.UnpinnedQueryBindings, []},
+          {Credo.Check.Extra.NoCommentsAsCommitMessages, []},
+          {Credo.Check.Extra.NoDbQueryInMount, []},
+          {Credo.Check.Extra.NoDedupBeforeCastAssoc, []},
+          {Credo.Check.Extra.NoDirectThirdPartyCalls, []},
+          {Credo.Check.Extra.NoLocaleInTaskClosure, []},
+          {Credo.Check.Extra.NoNonIdempotentJobs, []},
+          {Credo.Check.Extra.NoUnsupervisedProcesses, []}
         ]
       }
     }

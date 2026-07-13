@@ -1,6 +1,10 @@
-defmodule Credo.Check.IronLaw.NoFloatForMoney do
+defmodule Credo.Check.Extra.NoFloatForMoney do
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
+
   @moduledoc """
-  Iron Law #4: NEVER use `:float` for money — use `:decimal` or `:integer`.
+  Extra Rule #4: NEVER use `:float` for money — use `:decimal` or `:integer`.
 
   Matches Ecto schema fields and migration additions where the field name is
   money-related (price, amount, cost, balance, fee, rate, etc.) but type is
@@ -22,15 +26,16 @@ defmodule Credo.Check.IronLaw.NoFloatForMoney do
       %{
         checks: [
           %Credo.Check.Config{
-            check: Credo.Check.IronLaw.NoFloatForMoney,
+            check: Credo.Check.Extra.NoFloatForMoney,
             meta: [money_keywords: ~w(price amount cost balance fee rate total)]
           }
         ]
       }
   """
 
-  use Credo.Check, [category: :design,
-    exit_status: 2]
+  use Credo.Check,
+    category: :design,
+    exit_status: 2
 
   @default_money_kw ~w(price amount cost balance total fee rate salary wage payment
                        credit debit revenue discount tax tip refund commission bonus
@@ -38,52 +43,39 @@ defmodule Credo.Check.IronLaw.NoFloatForMoney do
                        bill invoice subscription shipment delivery insurance premium
                        donation charge tip_amount subtotal grand_total)
 
+  @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
   @impl true
   def run(%SourceFile{} = source_file, params) do
-    IronLawCredo.ASTTraversal.collect_issues(source_file, &issue_for_call_with_source/2)
-  end
-
-  defp issue_for_call_with_source(ast, source_file) do
-    money_kw = @default_money_kw
+    money_kw = Keyword.get(params, :money_keywords, @default_money_kw)
     money_re = Regex.compile!("(?i)(#{join(money_kw, "|")})")
-    issue_for_call(ast, money_re, source_file)
+
+    ASTTraversal.collect_issues(source_file, fn ast, source_file ->
+      issue_for_call(ast, money_re, source_file)
+    end)
   end
 
   defp issue_for_call({:field, meta, [name, type | _rest]}, money_re, source_file)
        when is_atom(name) do
-    field_name = Atom.to_string(name)
-
-    case type do
-      {:atom, _, :decimal} -> nil
-      {:atom, _, :integer} -> nil
-      {:atom, _, :float} ->
-        if String.match?(field_name, money_re) do
-          issue(source_file, field_name, meta[:line] || 0)
-        else
-          nil
-        end
-      _ -> nil
-    end
+    check_field_type(type, Atom.to_string(name), money_re, source_file, meta[:line] || 0)
   end
 
   defp issue_for_call({:add, meta, [name, type | _rest]}, money_re, source_file)
        when is_atom(name) do
-    field_name = Atom.to_string(name)
-
-    case type do
-      {:atom, _, :decimal} -> nil
-      {:atom, _, :integer} -> nil
-      {:atom, _, :float} ->
-        if String.match?(field_name, money_re) do
-          issue(source_file, field_name, meta[:line] || 0)
-        else
-          nil
-        end
-      _ -> nil
-    end
+    check_field_type(type, Atom.to_string(name), money_re, source_file, meta[:line] || 0)
   end
 
   defp issue_for_call(_ast, _re, _source_file), do: nil
+
+  defp check_field_type(type, field_name, money_re, source_file, line) do
+    if is_float?(type) and String.match?(field_name, money_re) do
+      issue(source_file, field_name, line)
+    else
+      nil
+    end
+  end
+
+  defp is_float?(:float), do: true
+  defp is_float?(_), do: false
 
   defp issue(source_file, field_name, line) do
     %Issue{
@@ -92,13 +84,13 @@ defmodule Credo.Check.IronLaw.NoFloatForMoney do
       trigger: Issue.no_trigger(),
       message: """
       Field "#{field_name}" appears to be money-related but uses :float.
-      Use :decimal or :integer (cents). See Iron Law #4.\n\n" <>
-      "  field :#{field_name}, :decimal      # For exact decimals\n" <>
-      "  field :#{field_name}, :integer       # For smallest currency units\n"
-    """
+      Use :decimal or :integer (cents). See Extra Rule #4.
+
+        field :#{field_name}, :decimal      # For exact decimals
+        field :#{field_name}, :integer       # For smallest currency units
+      """
     }
   end
 
-  defp join([], _sep), do: ""
   defp join(keywords, sep), do: Enum.map_join(keywords, sep, &to_string/1)
 end

@@ -1,6 +1,10 @@
-defmodule Credo.Check.IronLaw.NoRawUntrusted do
+defmodule Credo.Check.Extra.NoRawUntrusted do
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
+
   @moduledoc """
-  Iron Law #12: NEVER use `raw/1` with untrusted content — XSS vulnerability.
+  Extra Rule #12: NEVER use `raw/1` with untrusted content — XSS vulnerability.
 
   `raw/1` bypasses HTML encoding. Using it with user-controlled content creates
   XSS vulnerabilities. Only use `raw/1` with trusted, hardcoded HTML strings.
@@ -15,17 +19,21 @@ defmodule Credo.Check.IronLaw.NoRawUntrusted do
       <%= raw("<p>Static content</p>") %>  # ✅ hardcoded string is safe
   """
 
-  use Credo.Check, [category: :security,
-    exit_status: 2]
+  use Credo.Check,
+    category: :security,
+    exit_status: 2
 
+  @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
   @impl true
   def run(%SourceFile{} = source_file, _params) do
-    IronLawCredo.ASTTraversal.collect_issues(source_file, &check_raw/2)
+    ASTTraversal.collect_issues(source_file, &check_raw/2)
   end
 
-  defp check_raw({:., _, [{:., _, [:Phoenix, :HTML]}, :raw | args]}, source_file) do
+  defp check_raw({{:., _, [{:__aliases__, _, [:Phoenix, :HTML]}, :raw]}, _, args}, source_file) do
     case List.first(args) do
-      nil -> nil
+      nil ->
+        nil
+
       arg ->
         if is_untrusted?(arg) do
           issue(source_file, arg)
@@ -46,15 +54,16 @@ defmodule Credo.Check.IronLaw.NoRawUntrusted do
   defp check_raw(_, _source_file), do: nil
 
   defp is_untrusted?({var, _, []}) when is_atom(var) do
-    var not in [:true, :false, :nil, :__MODULE__]
+    var not in [true, false, nil, :__MODULE__]
+  end
+
+  defp is_untrusted?({:@, _, [{var, _, _}]}) when is_atom(var) do
+    var not in [true, false, nil, :__MODULE__]
   end
 
   defp is_untrusted?({:get_in, _, _}), do: true
-  defp is_untrusted?({:"[]", _, [_map, _key]}), do: true
   defp is_untrusted?({:elem, _, _}), do: true
   defp is_untrusted?({:access_key, _, _}), do: true
-  defp is_untrusted?({:string_quoted, _, _}), do: false
-  defp is_untrusted?({:charlist_quoted, _, _}), do: false
   defp is_untrusted?({:sigil_s, _, _}), do: false
   defp is_untrusted?({:sigil_c, _, _}), do: false
   defp is_untrusted?({:&, _, _}), do: false
@@ -66,33 +75,30 @@ defmodule Credo.Check.IronLaw.NoRawUntrusted do
   defp is_untrusted?({:try, _, _}), do: true
   defp is_untrusted?({:receive, _, _}), do: true
   defp is_untrusted?({:for, _, _}), do: true
-  defp is_untrusted?({:., _, [_, func]}) when is_atom(func) do
-    func not in [:raw, :safe_to_string, :to_string]
-  end
+
   defp is_untrusted?({:<<>>, _, _parts}), do: false
   defp is_untrusted?(_), do: false
 
   defp issue(source_file, arg) do
-    arg_name = case arg do
-      {var, _, []} -> to_string(var)
-      _ -> "input"
-    end
+    arg_name =
+      case arg do
+        {var, _, []} -> to_string(var)
+        _ -> "input"
+      end
 
     %Issue{
       filename: source_file.filename,
       line_no: line_from_ast(arg),
       trigger: Issue.no_trigger(),
       message: """
-      raw/1 used with potentially untrusted input (#{arg_name}). This is an XSS\n" <>
-      "vulnerability. Only use raw/1 with hardcoded, trusted HTML strings.\n\n" <>
-      "  <%= @user_bio %>\n"
-    """
+        raw/1 used with potentially untrusted input (#{arg_name}). This is an XSS\n" <>
+        "vulnerability. Only use raw/1 with hardcoded, trusted HTML strings.\n\n" <>
+        "  <%= @user_bio %>\n"
+      """
     }
   end
 
-  defp line_from_ast({_, meta, _}) when is_map(meta) do
-    meta[:line] || 0
-  end
+  defp line_from_ast({_, meta, _}) when is_map(meta), do: meta[:line] || 0
 
   defp line_from_ast(_) do
     0

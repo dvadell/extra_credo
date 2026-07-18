@@ -8,13 +8,13 @@ defmodule Credo.Check.Extra.NoExternalResource do
   ## Examples (non-compliant)
 
       defmodule MyModule do
-        @html File.read!("templates/index.html")  # ❌ won't recompile
+        @html File.read!("templates/index.html")  # [cross] won't recompile
 
   ## Examples (compliant)
 
       defmodule MyModule do
         @external_resource "templates/index.html"
-        @html File.read!("templates/index.html")  # ✅ will recompile
+        @html File.read!("templates/index.html")  # [check] will recompile
   """
 
   use Credo.Check,

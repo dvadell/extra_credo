@@ -9,7 +9,7 @@ defmodule Credo.Check.Extra.NoPubsubWithoutConnected do
   ## Examples (non-compliant)
 
       def mount(_params, _session, socket) do
-        Phoenix.PubSub.subscribe(MyApp.PubSub, "topic")  # ❌ runs twice
+        Phoenix.PubSub.subscribe(MyApp.PubSub, "topic")  # [cross] runs twice
         {:ok, socket}
       end
 

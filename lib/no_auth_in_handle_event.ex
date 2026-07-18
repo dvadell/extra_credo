@@ -8,7 +8,7 @@ defmodule Credo.Check.Extra.NoAuthInHandleEvent do
 
   ## Examples (non-compliant)
 
-      def handle_event("save", _params, socket) do  # ❌ no auth check
+      def handle_event("save", _params, socket) do  # [cross] no auth check
         MyApp.update_user(user, attrs)
         {:noreply, socket}
       end
@@ -18,7 +18,7 @@ defmodule Credo.Check.Extra.NoAuthInHandleEvent do
       def handle_event("save", _params, socket) do
         user = socket.assigns.current_user
 
-        if authorized?(user, :update, resource) do  # ✅ auth check
+        if authorized?(user, :update, resource) do  # [check] auth check
           MyApp.update_user(user, attrs)
           {:noreply, socket}
         else

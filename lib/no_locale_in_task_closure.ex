@@ -10,7 +10,7 @@ defmodule Credo.Check.Extra.NoLocaleInTaskClosure do
   ## Examples (non-compliant)
 
       Task.async(fn ->
-        Gettext.dgettext(MyApp.Gettext, "domain", "message")  # ❌ wrong locale
+        Gettext.dgettext(MyApp.Gettext, "domain", "message")  # [cross] wrong locale
       end)
 
   ## Examples (compliant)
@@ -18,7 +18,7 @@ defmodule Credo.Check.Extra.NoLocaleInTaskClosure do
       locale = Gettext.get_locale()
       Task.async(fn ->
         Gettext.put_locale(locale)
-        Gettext.dgettext(MyApp.Gettext, "domain", "message")  # ✅ correct locale
+        Gettext.dgettext(MyApp.Gettext, "domain", "message")  # [check] correct locale
       end)
   """
 

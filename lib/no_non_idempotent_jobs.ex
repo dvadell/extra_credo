@@ -1,5 +1,4 @@
-
-  defmodule Credo.Check.Extra.NoNonIdempotentJobs do
+defmodule Credo.Check.Extra.NoNonIdempotentJobs do
   @moduledoc """
   Jobs must be idempotent.
 
@@ -12,7 +11,7 @@
 
       def perform(%Oban.Job{args: args}) do
         user = build_user(args)
-        MyApp.Repo.insert!(user)  # ❌ fails on retry if already inserted
+        MyApp.Repo.insert!(user)  # [cross] fails on retry if already inserted
         {:ok, result}
       end
 

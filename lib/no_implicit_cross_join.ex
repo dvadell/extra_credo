@@ -1,5 +1,4 @@
-
-  defmodule Credo.Check.Extra.NoImplicitCrossJoin do
+defmodule Credo.Check.Extra.NoImplicitCrossJoin do
   @moduledoc """
   Extra Rule #15: NO IMPLICIT CROSS JOINS in Ecto queries.
 
@@ -9,11 +8,11 @@
 
   ## Examples (non-compliant)
 
-      from(a in Account, b in Booking)  # ❌ implicit cross join
+      from(a in Account, b in Booking)  # [cross] implicit cross join
 
   ## Examples (compliant)
 
-      from(a in Account, join: b in assoc(a, :bookings), on: true)  # ✅ explicit join
+      from(a in Account, join: b in assoc(a, :bookings), on: true)  # [check] explicit join
   """
 
   use Credo.Check,

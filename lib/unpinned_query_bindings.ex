@@ -1,5 +1,4 @@
-
-  defmodule Credo.Check.Extra.UnpinnedQueryBindings do
+defmodule Credo.Check.Extra.UnpinnedQueryBindings do
   @moduledoc """
   Extra Rule #5: ALWAYS pin values with `^` in Ecto queries.
 
@@ -10,12 +9,12 @@
   ## Examples (non-compliant)
 
       user_id = get_user_id()
-      from(u in User, where: u.id == user_id)  # ❌ unpinned
+      from(u in User, where: u.id == user_id)  # [cross] unpinned
 
   ## Examples (compliant)
 
       user_id = get_user_id()
-      from(u in User, where: u.id == ^user_id)  # ✅ pinned
+      from(u in User, where: u.id == ^user_id)  # [check] pinned
   """
 
   use Credo.Check,

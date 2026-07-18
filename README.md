@@ -34,7 +34,8 @@ Then register the checks in `.credo.exs`:
           {Credo.Check.Extra.NoRawUntrusted, []},
           {Credo.Check.Extra.ObanAtomKeys, []},
           {Credo.Check.Extra.ObanStructInArgs, []},
-          {Credo.Check.Extra.UnpinnedQueryBindings, []}
+          {Credo.Check.Extra.UnpinnedQueryBindings, []},
+          {Credo.Check.Extra.NoColorfulEmoji, []}
         ]
       }
     }
@@ -66,6 +67,7 @@ Then register the checks in `.credo.exs`:
 | `NoDirectThirdPartyCalls` | Flags direct calls to third-party libraries (HTTPoison, Tesla, ExAws, etc.) in context modules. Wrap them in dedicated modules. |
 | `NoLocaleInTaskClosure` | Flags Gettext calls inside `Task.async` closures that don't capture the caller's locale first, preventing wrong-locale bugs. |
 | `NoCommentsAsCommitMessages` | Flags TODO, FIXME, HACK, XXX comments and issue/PR references that belong in commit messages, not source code. |
+| `NoColorfulEmoji` | Flags colorful emoji characters (Misc Symbols, Dingbats, Emoticons, Pictographs) in source code and documentation. Use plain text instead. |
 
 ## Development
 

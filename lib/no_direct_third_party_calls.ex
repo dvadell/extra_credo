@@ -1,5 +1,4 @@
-
-  defmodule Credo.Check.Extra.NoDirectThirdPartyCalls do
+defmodule Credo.Check.Extra.NoDirectThirdPartyCalls do
   @moduledoc """
   Wrap third-party library APIs.
 

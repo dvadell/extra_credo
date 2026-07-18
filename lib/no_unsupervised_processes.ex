@@ -1,5 +1,4 @@
-
-  defmodule Credo.Check.Extra.NoUnsupervisedProcesses do
+defmodule Credo.Check.Extra.NoUnsupervisedProcesses do
   @moduledoc """
   Supervise all long-lived processes.
 
@@ -11,14 +10,14 @@
   ## Examples (non-compliant)
 
       def start_link(opts) do
-        GenServer.start_link(MyWorker, opts, name: __MODULE__)  # ❌ no supervisor
+        GenServer.start_link(MyWorker, opts, name: __MODULE__)  # [cross] no supervisor
       end
 
   ## Examples (compliant)
 
       def children(_opts) do
         [
-          {MyWorker, opts}  # ✅ supervised via Supervisor
+          {MyWorker, opts}  # [check] supervised via Supervisor
         ]
       end
   """

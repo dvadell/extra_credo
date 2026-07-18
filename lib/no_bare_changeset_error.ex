@@ -11,7 +11,7 @@ defmodule Credo.Check.Extra.NoBareChangesetError do
       def handle_event("save", params, socket) do
         case MyApp.update_user(user, params) do
           {:ok, user} -> {:noreply, socket}
-          {:error, _} -> {:noreply, socket}  # ❌ changeset errors lost
+          {:error, _} -> {:noreply, socket}  # [cross] changeset errors lost
         end
       end
 
@@ -20,7 +20,7 @@ defmodule Credo.Check.Extra.NoBareChangesetError do
       def handle_event("save", params, socket) do
         case MyApp.update_user(user, params) do
           {:ok, user} -> {:noreply, socket}
-          {:error, %Ecto.Changeset{} = cs} ->  # ✅ re-renders form with errors
+          {:error, %Ecto.Changeset{} = cs} ->  # [check] re-renders form with errors
             {:noreply, assign(socket, form: to_form(cs))}
         end
       end

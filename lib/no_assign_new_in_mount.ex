@@ -10,15 +10,15 @@ defmodule Credo.Check.Extra.NoAssignNewInMount do
 
       def mount(_params, _session, socket) do
         socket
-        |> assign_new(:locale, fn -> get_locale() end)  # ❌ stale on revisit
-        |> assign_new(:current_user, fn -> load_user(socket) end)  # ❌ stale
+        |> assign_new(:locale, fn -> get_locale() end)  # [cross] stale on revisit
+        |> assign_new(:current_user, fn -> load_user(socket) end)  # [cross] stale
 
   ## Examples (compliant)
 
       def mount(_params, _session, socket) do
         socket
-        |> assign(:locale, get_locale())  # ✅ always refresh
-        |> assign(:current_user, load_user(socket))  # ✅ always refresh
+        |> assign(:locale, get_locale())  # [check] always refresh
+        |> assign(:current_user, load_user(socket))  # [check] always refresh
   """
 
   use Credo.Check,

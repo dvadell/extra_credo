@@ -4,7 +4,7 @@ defmodule ExtraCredoTest do
   test "returns all check modules" do
     checks = ExtraCredo.checks()
     assert is_list(checks)
-    assert length(checks) == 18
+    assert length(checks) == 19
     assert Credo.Check.Extra.NoFloatForMoney in checks
   end
 end
@@ -3167,5 +3167,118 @@ defmodule NoFloatForMoneyExtraTest do
     |> to_source_file("migration.ex")
     |> run_check(@check)
     |> assert_issue(fn issue -> assert issue.message |> String.contains?(":float") end)
+  end
+end
+
+defmodule NoColorfulEmojiTest do
+  use Credo.Test.Case
+
+  @check Credo.Check.Extra.NoColorfulEmoji
+
+  test "detects dingbat emoji (U+2700-U+27BF)" do
+    source = """
+    defmodule MyModule do
+      @moduledoc \"\"\"
+      This has a check mark: \u2705
+      \"\"\"
+    end
+    """
+
+    source
+    |> to_source_file("my_module.ex")
+    |> run_check(@check)
+    |> assert_issue(fn issue ->
+      assert issue.message |> String.contains?("emoji")
+      assert issue.trigger == "\u2705"
+      assert issue.line_no == 3
+    end)
+  end
+
+  test "detects miscellaneous symbols emoji (U+2600-U+26FF)" do
+    source = """
+    defmodule MyModule do
+      @moduledoc \"\"\"
+      Star: \u2605
+      \"\"\"
+    end
+    """
+
+    source
+    |> to_source_file("my_module.ex")
+    |> run_check(@check)
+    |> assert_issue(fn issue ->
+      assert issue.message |> String.contains?("emoji")
+      assert issue.trigger == "\u2605"
+    end)
+  end
+
+  test "detects emoticon emoji (U+1F300-U+1F9FF)" do
+    source = """
+    defmodule MyModule do
+      @moduledoc \"\"\"
+      Rocket: \u{1F680}
+      \"\"\"
+    end
+    """
+
+    source
+    |> to_source_file("my_module.ex")
+    |> run_check(@check)
+    |> assert_issue(fn issue ->
+      assert issue.message |> String.contains?("emoji")
+      assert issue.trigger == "\u{1F680}"
+    end)
+  end
+
+  test "detects extended pictograph emoji (U+1FA00-U+1FAFF)" do
+    source = """
+    defmodule MyModule do
+      # \u{1FA75}
+    end
+    """
+
+    source
+    |> to_source_file("my_module.ex")
+    |> run_check(@check)
+    |> assert_issue(fn issue ->
+      assert issue.message |> String.contains?("emoji")
+    end)
+  end
+
+  test "detects multiple emoji on different lines" do
+    source = """
+    defmodule MyModule do
+      # comment with \u2705
+      @doc "also here: \u274C"
+    end
+    """
+
+    issues =
+      source
+      |> to_source_file("my_module.ex")
+      |> run_check(@check)
+
+    assert length(issues) == 2
+    assert Enum.any?(issues, fn i -> i.line_no == 2 end)
+    assert Enum.any?(issues, fn i -> i.line_no == 3 end)
+  end
+
+  test "does not flag clean source without emoji" do
+    source = """
+    defmodule MyModule do
+      @moduledoc \"\"\"
+      No emoji here, just plain text.
+      \"\"\"
+
+      def my_func do
+        :ok
+      end
+    end
+    """
+
+    source
+    |> to_source_file("my_module.ex")
+    |> run_check(@check)
+    |> refute_issues()
   end
 end

@@ -58,7 +58,8 @@ defmodule ExtraCredo do
       Credo.Check.Extra.NoUnsupervisedProcesses,
       Credo.Check.Extra.ObanAtomKeys,
       Credo.Check.Extra.ObanStructInArgs,
-      Credo.Check.Extra.UnpinnedQueryBindings
+      Credo.Check.Extra.UnpinnedQueryBindings,
+      Credo.Check.Extra.NoColorfulEmoji
     ]
   end
 end

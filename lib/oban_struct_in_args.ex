@@ -1,5 +1,4 @@
-
-  defmodule Credo.Check.Extra.ObanStructInArgs do
+defmodule Credo.Check.Extra.ObanStructInArgs do
   @moduledoc """
   Extra Rule #9: NEVER store structs in Oban args — store IDs.
 
@@ -9,11 +8,11 @@
 
   ## Examples (non-compliant)
 
-      MyApp.Worker.perform_async(%{user: %User{id: 1}})  # ❌ struct in args
+      MyApp.Worker.perform_async(%{user: %User{id: 1}})  # [cross] struct in args
 
   ## Examples (compliant)
 
-      MyApp.Worker.perform_async(%{user_id: user.id})  # ✅ ID in args
+      MyApp.Worker.perform_async(%{user_id: user.id})  # [check] ID in args
   """
 
   use Credo.Check,

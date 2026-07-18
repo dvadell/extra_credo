@@ -1,5 +1,4 @@
-
-  defmodule Credo.Check.Extra.NoDedupBeforeCastAssoc do
+defmodule Credo.Check.Extra.NoDedupBeforeCastAssoc do
   @moduledoc """
   Deduplicate before cast_assoc.
 
@@ -10,12 +9,12 @@
 
   ## Examples (non-compliant)
 
-      changeset = Changeset.cast_assoc(changeset, :items, with: &changeset/1)  # ❌ items may have duplicates
+      changeset = Changeset.cast_assoc(changeset, :items, with: &changeset/1)  # [cross] items may have duplicates
 
   ## Examples (compliant)
 
       items = Enum.uniq_by(items, & &1.id)
-      changeset = Changeset.cast_assoc(changeset, :items, with: &changeset/1)  # ✅ deduped
+      changeset = Changeset.cast_assoc(changeset, :items, with: &changeset/1)  # [check] deduped
   """
 
   use Credo.Check,

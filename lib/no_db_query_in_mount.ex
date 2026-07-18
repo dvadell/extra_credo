@@ -1,5 +1,4 @@
-
-  defmodule Credo.Check.Extra.NoDbQueryInMount do
+defmodule Credo.Check.Extra.NoDbQueryInMount do
   @moduledoc """
   No unconditional DB queries in mount/3.
 
@@ -11,7 +10,7 @@
   ## Examples (non-compliant)
 
       def mount(_params, _session, socket) do
-        user = MyApp.Repo.get(User, socket.assigns.user_id)  # ❌ runs twice
+        user = MyApp.Repo.get(User, socket.assigns.user_id)  # [cross] runs twice
         {:ok, assign(socket, :user, user)}
       end
 

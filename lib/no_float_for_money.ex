@@ -11,8 +11,8 @@ defmodule Credo.Check.Extra.NoFloatForMoney do
       defmodule Payments do
         use Ecto.Schema
 
-        field :price, :float           # ❌ money field with :float
-        field :cost, :float            # ❌ money field with :float
+        field :price, :float           # [cross] money field with :float
+        field :cost, :float            # [cross] money field with :float
         field :width, :float           # OK — not money-related
         field :price, :decimal         # OK — proper type
       end

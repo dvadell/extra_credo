@@ -7,12 +7,12 @@ defmodule Credo.Check.Extra.NoRawUntrusted do
 
   ## Examples (non-compliant)
 
-      <%= raw(@user_bio) %>  # ❌ XSS vulnerability
-      <%= raw(params["content"]) %>  # ❌ XSS vulnerability
+      <%= raw(@user_bio) %>  # [cross] XSS vulnerability
+      <%= raw(params["content"]) %>  # [cross] XSS vulnerability
 
   ## Examples (compliant)
 
-      <%= raw("<p>Static content</p>") %>  # ✅ hardcoded string is safe
+      <%= raw("<p>Static content</p>") %>  # [check] hardcoded string is safe
   """
 
   use Credo.Check,

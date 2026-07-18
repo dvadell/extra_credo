@@ -59,11 +59,6 @@ Then register the checks in `.credo.exs`:
 | `NoExternalResource` | Flags compile-time file reads (`File.read!`, etc.) at the module level that lack a corresponding `@external_resource` declaration. |
 | `NoAssignNewInMount` | Flags `assign_new` usage in `mount/3` for values that should be refreshed on every page load. |
 | `NoBareChangesetError` | Flags bare `{:error, _}` pattern matches in `handle_event` that swallow changeset errors and prevent form re-render. |
-
-### DMV Rules
-
-| Check | What it does |
-|---|---|
 | `NoDbQueryInMount` | Flags unconditional database queries in `mount/3` that aren't guarded by `connected?`, preventing duplicate queries. |
 | `NoNonIdempotentJobs` | Flags bang variants of Ecto repo functions (`insert!`, `update!`, `delete!`) in Oban `perform` functions, since jobs may be retried. |
 | `NoDedupBeforeCastAssoc` | Flags `cast_assoc` calls that aren't preceded by deduplication of the input list, preventing duplicate associated records. |
@@ -81,3 +76,23 @@ mix credo
 mix dialyzer
 MIX_ENV=test mix test
 ```
+
+## Testing on `iex`
+It's useful to use `dbg()` inside `iex` to test rules. 
+
+For example, let's debug `Credo.Check.Extra.NoDirectThirdPartyCalls`:
+
+1. Add a `dbg()` statement in the `run/2` function in `lib/no_direct_third_party_calls.ex`.
+
+2. Run the following into `iex --dbg pry -S mix`:
+```
+iex> file = "lib/no_direct_third_party_calls.ex"
+
+iex> (
+file
+|> File.read!()
+|> Credo.SourceFile.parse(file)
+|> Credo.Check.Extra.NoDirectThirdPartyCalls.run([]) )
+```
+
+It will only run `Credo.Check.Extra.NoDirectThirdPartyCalls` and stop in the `dbg()` statement.

@@ -4,7 +4,7 @@ defmodule Credo.Check.Extra.NoDbQueryInMount do
   alias ExtraCredo.ASTTraversal
 
   @moduledoc """
-  DMV Rule #1: No unconditional DB queries in mount/3.
+  No unconditional DB queries in mount/3.
 
   Flags Repo.all/1, Repo.get/2, Repo.get!/2, Repo.one/1, Repo.one!/1,
   Repo.insert/1-2, Repo.insert!/1-2, Repo.update/1-2, Repo.update!/1-2,

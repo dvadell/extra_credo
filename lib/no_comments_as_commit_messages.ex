@@ -3,7 +3,7 @@ defmodule Credo.Check.Extra.NoCommentsAsCommitMessages do
   alias Credo.SourceFile
 
   @moduledoc """
-  DMV Rule #26: Comments aren't commit messages.
+  Comments aren't commit messages.
 
   Flags comments that look like commit messages, TODOs, issue references,
   or PR links. These belong in Git history, not in source code.

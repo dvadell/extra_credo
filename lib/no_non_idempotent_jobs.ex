@@ -4,7 +4,7 @@ defmodule Credo.Check.Extra.NoNonIdempotentJobs do
   alias ExtraCredo.ASTTraversal
 
   @moduledoc """
-  DMV Rule #7: Jobs must be idempotent.
+  Jobs must be idempotent.
 
   Oban jobs may be retried on failure. Non-idempotent operations like
   `Repo.insert!/1`, `Repo.update!/2`, `Repo.delete!/1` will cause errors

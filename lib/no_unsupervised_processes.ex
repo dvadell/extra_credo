@@ -4,7 +4,7 @@ defmodule Credo.Check.Extra.NoUnsupervisedProcesses do
   alias ExtraCredo.ASTTraversal
 
   @moduledoc """
-  DMV Rule #14: Supervise all long-lived processes.
+  Supervise all long-lived processes.
 
   Flags bare `GenServer.start_link`, `Agent.start_link`, `Task.start`,
   `Task.start_link`, `GenServer.start` calls that are not inside a supervisor's

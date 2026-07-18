@@ -4,7 +4,7 @@ defmodule Credo.Check.Extra.NoDirectThirdPartyCalls do
   alias ExtraCredo.ASTTraversal
 
   @moduledoc """
-  DMV Rule #20: Wrap third-party library APIs.
+  Wrap third-party library APIs.
 
   Direct calls to third-party libraries (HTTPoison, Tesla, ExAws, etc.) in
   context modules make testing harder and coupling tighter. Wrap external
@@ -24,7 +24,6 @@ defmodule Credo.Check.Extra.NoDirectThirdPartyCalls do
     extra_modules = Keyword.get(params, :modules, [])
     all_modules = @third_party_modules ++ extra_modules
 
-    dbg()
     ASTTraversal.collect_issues(
       source_file,
       fn node, sf -> check_direct_call(node, sf, all_modules) end

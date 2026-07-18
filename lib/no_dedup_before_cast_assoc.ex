@@ -4,7 +4,7 @@ defmodule Credo.Check.Extra.NoDedupBeforeCastAssoc do
   alias ExtraCredo.ASTTraversal
 
   @moduledoc """
-  DMV Rule #17: Deduplicate before cast_assoc.
+  Deduplicate before cast_assoc.
 
   `cast_assoc/3` with a list input should be deduplicated first to avoid
   inserting duplicate associated records. Flags `cast_assoc` calls where the

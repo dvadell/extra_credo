@@ -65,6 +65,11 @@
           {Credo.Check.Design.TagFIXME, []},
           {Credo.Check.Design.DuplicatedCode, []},
 
+          # --- Warnings ---
+          {Credo.Check.Warning.Dbg, []},
+          {Credo.Check.Warning.IoInspect, []},
+          {Credo.Check.Warning.Dbg, []},
+
           # --- Custom Extra Checks ---
           {Credo.Check.Extra.NoFloatForMoney, []},
           {Credo.Check.Extra.NoBareChangesetError, []},

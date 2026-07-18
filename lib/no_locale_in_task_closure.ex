@@ -4,7 +4,7 @@ defmodule Credo.Check.Extra.NoLocaleInTaskClosure do
   alias ExtraCredo.ASTTraversal
 
   @moduledoc """
-  DMV Rule #25: Capture locale before spawning.
+  Capture locale before spawning.
 
   `Gettext.get_locale()` returns the locale of the calling process. Inside a
   `Task.async` closure, it will return the task's process locale (usually the

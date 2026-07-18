@@ -73,6 +73,8 @@ defmodule Credo.Check.Extra.NoAssignNewInMount do
       filename: source_file.filename,
       line_no: line,
       trigger: Issue.no_trigger(),
+      check: __MODULE__,
+      category: :consistency,
       message: """
       assign_new(:#{key_str}) in mount — value won't refresh on subsequent visits.
       assign_new/3 skips if the key exists, causing stale data. Use assign/3

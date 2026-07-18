@@ -114,6 +114,8 @@ defmodule Credo.Check.Extra.ObanStructInArgs do
       filename: source_file.filename,
       line_no: call_meta[:line] || 0,
       trigger: Issue.no_trigger(),
+      check: __MODULE__,
+      category: :consistency,
       message: """
         Oban args contain a struct. Oban serializes args to JSON, losing\n" <>
         "the __struct__ field. Store an ID and fetch the struct in perform/1.\n\n" <>

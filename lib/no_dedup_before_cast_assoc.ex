@@ -121,6 +121,8 @@ defmodule Credo.Check.Extra.NoDedupBeforeCastAssoc do
       line_no: meta[:line] || 0,
       column: meta[:column] || 0,
       trigger: Issue.no_trigger(),
+      check: __MODULE__,
+      category: :consistency,
       message: """
         cast_assoc(:#{assoc_name}) without deduplication. If the input list\n" <>
         "contains duplicates, cast_assoc will insert duplicate associated records.\n\n" <>

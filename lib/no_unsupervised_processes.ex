@@ -84,6 +84,8 @@ defmodule Credo.Check.Extra.NoUnsupervisedProcesses do
       line_no: meta[:line] || 0,
       column: meta[:column] || 0,
       trigger: Issue.no_trigger(),
+      check: __MODULE__,
+      category: :consistency,
       message: """
         #{mod}.#{func_str} called outside a supervisor's children list. Long-lived\n" <>
         "processes must be supervised so they can be restarted on failure.\n\n" <>

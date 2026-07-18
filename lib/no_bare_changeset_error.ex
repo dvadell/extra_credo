@@ -153,6 +153,8 @@ defmodule Credo.Check.Extra.NoBareChangesetError do
       filename: source_file.filename,
       line_no: line,
       trigger: Issue.no_trigger(),
+      check: __MODULE__,
+      category: :consistency,
       message: """
         Bare {:error, _} in handle_event — changeset errors are swallowed and the\n" <>
         "form won't re-render validation errors. Match {:error, %Ecto.Changeset{}\n" <>

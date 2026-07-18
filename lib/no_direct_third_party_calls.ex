@@ -54,6 +54,8 @@ defmodule Credo.Check.Extra.NoDirectThirdPartyCalls do
       line_no: meta[:line] || 0,
       column: meta[:column] || 0,
       trigger: Issue.no_trigger(),
+      check: __MODULE__,
+      category: :consistency,
       message: """
         Direct #{module_str} call in context module. Third-party library APIs\n" <>
         "should be wrapped in a dedicated module (e.g. MyApp.HttpClient) so they\n" <>

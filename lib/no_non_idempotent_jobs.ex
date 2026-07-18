@@ -102,6 +102,8 @@ defmodule Credo.Check.Extra.NoNonIdempotentJobs do
       line_no: meta[:line] || 0,
       column: meta[:column] || 0,
       trigger: Issue.no_trigger(),
+      check: __MODULE__,
+      category: :consistency,
       message: """
         Repo.#{func_str} used in a job perform/1 function. Jobs may be retried on\n" <>
         "failure, so non-idempotent operations cause errors or duplicate data.\n\n" <>

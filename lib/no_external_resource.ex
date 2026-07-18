@@ -79,6 +79,8 @@ defmodule Credo.Check.Extra.NoExternalResource do
       filename: source_file.filename,
       line_no: meta[:line] || 0,
       trigger: Issue.no_trigger(),
+      check: __MODULE__,
+      category: :consistency,
       message: """
         File.#{func}/1 at module level without @external_resource. The module will\n" <>
         "not recompile when the file changes. Add @external_resource before the read.\n\n" <>

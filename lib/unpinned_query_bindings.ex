@@ -147,6 +147,8 @@ defmodule Credo.Check.Extra.UnpinnedQueryBindings do
       filename: source_file.filename,
       line_no: meta[:line] || 0,
       trigger: Issue.no_trigger(),
+      check: __MODULE__,
+      category: :security,
       message: """
         Variable #{var} used in Ecto query without ^ pin operator.\n" <>
         "Use ^#{var} to bind outer-scope variables. Unpinned variables are treated\n" <>

@@ -87,6 +87,8 @@ defmodule Credo.Check.Extra.ObanAtomKeys do
       filename: source_file.filename,
       line_no: meta[:line] || 0,
       trigger: Issue.no_trigger(),
+      check: __MODULE__,
+      category: :consistency,
       message: """
         Oban worker uses atom key #{key} in args pattern. Oban serializes args as\n" <>
         "JSON (string keys). Use \"#{key}\" => instead of #{key}:.\n\n" <>

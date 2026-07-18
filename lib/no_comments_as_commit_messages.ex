@@ -74,6 +74,8 @@ defmodule Credo.Check.Extra.NoCommentsAsCommitMessages do
         line_no: line_no,
         column: 1,
         trigger: Issue.no_trigger(),
+        check: __MODULE__,
+        category: :consistency,
         message: """
         Comment looks like a #{kind} instead of explaining code behavior.
         TODOs, issue references, and PR links belong in Git commit messages or

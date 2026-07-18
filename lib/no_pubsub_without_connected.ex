@@ -93,6 +93,8 @@ defmodule Credo.Check.Extra.NoPubsubWithoutConnected do
       line_no: meta[:line] || 0,
       column: meta[:column] || 0,
       trigger: Issue.no_trigger(),
+      check: __MODULE__,
+      category: :consistency,
       message: """
       PubSub.subscribe called without connected? guard. Mount runs twice, causing\n" <>
       "double-delivery. Wrap in `if connected?(socket) do ... end`.\n\n" <>

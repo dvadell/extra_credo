@@ -120,6 +120,8 @@ defmodule Credo.Check.Extra.NoDbQueryInMount do
       line_no: meta[:line] || 0,
       column: meta[:column] || 0,
       trigger: Issue.no_trigger(),
+      check: __MODULE__,
+      category: :consistency,
       message: """
       Repo.#{func}/N in mount/3 without connected? guard. Mount runs twice
       (init + socket connected), causing duplicate queries. Wrap in

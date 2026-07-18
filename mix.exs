@@ -23,7 +23,7 @@ defmodule ExtraCredo.MixProject do
   defp deps do
     [
       {:credo, "~> 1.7"},
-      {:dialyxir, "~> 1.4", only: :dev, runtime: false}
+      {:dialyxir, "~> 1.4", runtime: false}
     ]
   end
 

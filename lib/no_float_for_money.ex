@@ -1,8 +1,4 @@
 defmodule Credo.Check.Extra.NoFloatForMoney do
-  alias Credo.Issue
-  alias Credo.SourceFile
-  alias ExtraCredo.ASTTraversal
-
   @moduledoc """
   Extra Rule #4: NEVER use `:float` for money — use `:decimal` or `:integer`.
 
@@ -37,6 +33,10 @@ defmodule Credo.Check.Extra.NoFloatForMoney do
     category: :design,
     exit_status: 2
 
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
+
   @default_money_kw ~w(price amount cost balance total fee rate salary wage payment
                        credit debit revenue discount tax tip refund commission bonus
                        penalty fine reward earnings profit loss currency money cash
@@ -67,15 +67,15 @@ defmodule Credo.Check.Extra.NoFloatForMoney do
   defp issue_for_call(_ast, _re, _source_file), do: nil
 
   defp check_field_type(type, field_name, money_re, source_file, line) do
-    if is_float?(type) and String.match?(field_name, money_re) do
+    if float?(type) and String.match?(field_name, money_re) do
       issue(source_file, field_name, line)
     else
       nil
     end
   end
 
-  defp is_float?(:float), do: true
-  defp is_float?(_), do: false
+  defp float?(:float), do: true
+  defp float?(_), do: false
 
   defp issue(source_file, field_name, line) do
     %Issue{

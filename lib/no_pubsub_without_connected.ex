@@ -1,8 +1,4 @@
 defmodule Credo.Check.Extra.NoPubsubWithoutConnected do
-  alias Credo.Issue
-  alias Credo.SourceFile
-  alias ExtraCredo.ASTTraversal
-
   @moduledoc """
   Extra Rule #3: CHECK `connected?/1` before PubSub subscribe.
 
@@ -31,6 +27,10 @@ defmodule Credo.Check.Extra.NoPubsubWithoutConnected do
     category: :consistency,
     exit_status: 2
 
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
+
   @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
   @impl true
   def run(%SourceFile{} = source_file, _params) do
@@ -42,36 +42,36 @@ defmodule Credo.Check.Extra.NoPubsubWithoutConnected do
   end
 
   defp check_subscribe(call, path, source_file) when is_tuple(call) do
-    if is_subscribe_call?(call) and not in_connected_guard?(path) do
+    if subscribe_call?(call) and not in_connected_guard?(path) do
       issue(source_file, call)
     else
       nil
     end
   end
 
-  defp is_subscribe_call?({:., _, [inner, :subscribe]}) do
+  defp subscribe_call?({:., _, [inner, :subscribe]}) do
     case inner do
       {:__aliases__, _, [:Phoenix, :PubSub]} -> true
       _ -> false
     end
   end
 
-  defp is_subscribe_call?({:subscribe, _, _}), do: true
-  defp is_subscribe_call?(_), do: false
+  defp subscribe_call?({:subscribe, _, _}), do: true
+  defp subscribe_call?(_), do: false
 
   defp in_connected_guard?(path) do
     Enum.any?(path, &has_connected_guard?/1)
   end
 
   defp has_connected_guard?({:if, _, [condition | _]}) do
-    is_connected_call?(condition)
+    connected_call?(condition)
   end
 
   defp has_connected_guard?(_), do: false
 
-  defp is_connected_call?({:connected?, _, args}) when is_list(args), do: true
+  defp connected_call?({:connected?, _, args}) when is_list(args), do: true
 
-  defp is_connected_call?({{:., _, [inner, :connected?]}, _, _args}) do
+  defp connected_call?({{:., _, [inner, :connected?]}, _, _args}) do
     case inner do
       {:__aliases__, _, [:Phoenix, :LiveView]} -> true
       {:__aliases__, _, [:Phoenix, :LiveView, :Socket]} -> true
@@ -79,7 +79,7 @@ defmodule Credo.Check.Extra.NoPubsubWithoutConnected do
     end
   end
 
-  defp is_connected_call?(_), do: false
+  defp connected_call?(_), do: false
 
   defp issue(source_file, call) do
     meta =

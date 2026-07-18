@@ -38,7 +38,7 @@ defmodule ExtraCredo.ASTTraversal do
     [node] ++ flatten(children)
   end
 
-  def flatten(node = {_, _}) do
+  def flatten({_, _} = node) do
     [node] ++ flatten(Tuple.to_list(node))
   end
 

@@ -1,7 +1,4 @@
 defmodule Credo.Check.Extra.NoBareChangesetError do
-  alias Credo.Issue
-  alias ExtraCredo.ASTTraversal
-
   @moduledoc """
   Extra Rule #24: MATCH `{:error, %Ecto.Changeset{}}` EXPLICITLY.
 
@@ -32,6 +29,9 @@ defmodule Credo.Check.Extra.NoBareChangesetError do
   use Credo.Check,
     category: :consistency,
     exit_status: 2
+
+  alias Credo.Issue
+  alias ExtraCredo.ASTTraversal
 
   @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
   @impl true

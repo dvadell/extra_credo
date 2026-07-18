@@ -1,7 +1,4 @@
 defmodule Credo.Check.Extra.NoCommentsAsCommitMessages do
-  alias Credo.Issue
-  alias Credo.SourceFile
-
   @moduledoc """
   Comments aren't commit messages.
 
@@ -22,6 +19,9 @@ defmodule Credo.Check.Extra.NoCommentsAsCommitMessages do
   use Credo.Check,
     category: :consistency,
     exit_status: 2
+
+  alias Credo.Issue
+  alias Credo.SourceFile
 
   @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
   @impl true

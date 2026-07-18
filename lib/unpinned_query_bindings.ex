@@ -1,8 +1,5 @@
-defmodule Credo.Check.Extra.UnpinnedQueryBindings do
-  alias Credo.Issue
-  alias Credo.SourceFile
-  alias ExtraCredo.ASTTraversal
 
+  defmodule Credo.Check.Extra.UnpinnedQueryBindings do
   @moduledoc """
   Extra Rule #5: ALWAYS pin values with `^` in Ecto queries.
 
@@ -24,6 +21,10 @@ defmodule Credo.Check.Extra.UnpinnedQueryBindings do
   use Credo.Check,
     category: :security,
     exit_status: 2
+
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
 
   @ecto_query_functions ~w(where having order_by group_by select distinct limit offset dynamic)a
 

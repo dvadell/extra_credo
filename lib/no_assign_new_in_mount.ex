@@ -1,7 +1,4 @@
 defmodule Credo.Check.Extra.NoAssignNewInMount do
-  alias Credo.Issue
-  alias ExtraCredo.ASTTraversal
-
   @moduledoc """
   Extra Rule #21: NEVER use `assign_new` for values refreshed every mount.
 
@@ -27,6 +24,9 @@ defmodule Credo.Check.Extra.NoAssignNewInMount do
   use Credo.Check,
     category: :consistency,
     exit_status: 2
+
+  alias Credo.Issue
+  alias ExtraCredo.ASTTraversal
 
   @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
   @impl true

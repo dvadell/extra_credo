@@ -1,8 +1,4 @@
 defmodule Credo.Check.Extra.ObanAtomKeys do
-  alias Credo.Issue
-  alias Credo.SourceFile
-  alias ExtraCredo.ASTTraversal
-
   @moduledoc """
   Extra Rule #8: Oban args use STRING keys, not atoms.
 
@@ -12,16 +8,20 @@ defmodule Credo.Check.Extra.ObanAtomKeys do
 
   ## Examples (non-compliant)
 
-      def perform(%Oban.Job{args: %{user_id: id}}) do  # ❌ atom key
+      def perform(%Oban.Job{args: %{user_id: id}}) do
 
   ## Examples (compliant)
 
-      def perform(%Oban.Job{args: %{"user_id" => id}}) do  # ✅ string key
+      def perform(%Oban.Job{args: %{"user_id" => id}}) do
   """
 
   use Credo.Check,
     category: :consistency,
     exit_status: 2
+
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
 
   @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
   @impl true

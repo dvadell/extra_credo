@@ -1,8 +1,4 @@
 defmodule Credo.Check.Extra.NoExternalResource do
-  alias Credo.Issue
-  alias Credo.SourceFile
-  alias ExtraCredo.ASTTraversal
-
   @moduledoc """
   Extra Rule #16: @external_resource FOR COMPILE-TIME FILES.
 
@@ -24,6 +20,10 @@ defmodule Credo.Check.Extra.NoExternalResource do
   use Credo.Check,
     category: :consistency,
     exit_status: 2
+
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
 
   @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
   @impl true

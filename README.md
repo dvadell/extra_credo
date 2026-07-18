@@ -11,7 +11,7 @@ Add `extra_credo` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:extra_credo, "~> 0.1.0"}
+    {:extra_credo, github: "dvadell/extra_credo"}
   ]
 end
 ```
@@ -72,7 +72,7 @@ Then register the checks in `.credo.exs`:
 ```bash
 mix compile
 mix format
-mix credo
+mix credo --strict
 mix dialyzer
 MIX_ENV=test mix test
 ```

@@ -1,7 +1,4 @@
 defmodule Credo.Check.Extra.NoAuthInHandleEvent do
-  alias Credo.Issue
-  alias ExtraCredo.ASTTraversal
-
   @moduledoc """
   Extra Rule #11: AUTHORIZE in EVERY LiveView `handle_event`.
 
@@ -42,6 +39,9 @@ defmodule Credo.Check.Extra.NoAuthInHandleEvent do
     category: :security,
     exit_status: 2
 
+  alias Credo.Issue
+  alias ExtraCredo.ASTTraversal
+
   @default_auth_functions ~w(authorized? authorize authorize! can? cannot? permitted?
                              check_auth verify_auth access? allowed? deny? forbid?)
 
@@ -76,31 +76,31 @@ defmodule Credo.Check.Extra.NoAuthInHandleEvent do
   defp has_auth_check?(body, auth_functions) do
     body
     |> ASTTraversal.flatten()
-    |> Enum.any?(&is_auth_call?(&1, auth_functions))
+    |> Enum.any?(&auth_call?(&1, auth_functions))
   end
 
-  defp is_auth_call?({{:., _, [_, func]}, _, _}, auth_functions) do
+  defp auth_call?({{:., _, [_, func]}, _, _}, auth_functions) do
     to_string(func) in auth_functions
   end
 
-  defp is_auth_call?({func, _, _}, auth_functions) when is_atom(func) do
+  defp auth_call?({func, _, _}, auth_functions) when is_atom(func) do
     to_string(func) in auth_functions
   end
 
-  defp is_auth_call?({:if, _, [condition | _]}, auth_functions),
-    do: is_auth_call?(condition, auth_functions)
+  defp auth_call?({:if, _, [condition | _]}, auth_functions),
+    do: auth_call?(condition, auth_functions)
 
-  defp is_auth_call?({:case, _, [subject | _]}, auth_functions),
-    do: is_auth_call?(subject, auth_functions)
+  defp auth_call?({:case, _, [subject | _]}, auth_functions),
+    do: auth_call?(subject, auth_functions)
 
-  defp is_auth_call?({:with, _, clauses}, auth_functions),
-    do: Enum.any?(clauses, &is_auth_call?(&1, auth_functions))
+  defp auth_call?({:with, _, clauses}, auth_functions),
+    do: Enum.any?(clauses, &auth_call?(&1, auth_functions))
 
-  defp is_auth_call?({key, node}, auth_functions) when key in [:do, :else, :after] do
-    is_auth_call?(node, auth_functions)
+  defp auth_call?({key, node}, auth_functions) when key in [:do, :else, :after] do
+    auth_call?(node, auth_functions)
   end
 
-  defp is_auth_call?(_, _auth_functions) do
+  defp auth_call?(_, _auth_functions) do
     false
   end
 

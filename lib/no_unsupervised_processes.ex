@@ -1,8 +1,5 @@
-defmodule Credo.Check.Extra.NoUnsupervisedProcesses do
-  alias Credo.Issue
-  alias Credo.SourceFile
-  alias ExtraCredo.ASTTraversal
 
+  defmodule Credo.Check.Extra.NoUnsupervisedProcesses do
   @moduledoc """
   Supervise all long-lived processes.
 
@@ -30,6 +27,10 @@ defmodule Credo.Check.Extra.NoUnsupervisedProcesses do
     category: :consistency,
     exit_status: 2
 
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
+
   @start_functions ~w(start_link start)a
   @process_modules ~w(GenServer Agent Task)a
 
@@ -43,14 +44,14 @@ defmodule Credo.Check.Extra.NoUnsupervisedProcesses do
   end
 
   defp check_unsupervised_process(call, path, source_file) when is_tuple(call) do
-    if is_process_start_call?(call) and not in_supervisor_children?(path) do
+    if process_start_call?(call) and not in_supervisor_children?(path) do
       issue(source_file, call)
     else
       nil
     end
   end
 
-  defp is_process_start_call?({:., _, [inner, func]}) do
+  defp process_start_call?({:., _, [inner, func]}) do
     if func in @start_functions do
       case inner do
         {:__aliases__, _, segments} ->
@@ -64,7 +65,7 @@ defmodule Credo.Check.Extra.NoUnsupervisedProcesses do
     end
   end
 
-  defp is_process_start_call?(_), do: false
+  defp process_start_call?(_), do: false
 
   defp in_supervisor_children?(path) do
     Enum.any?(path, fn

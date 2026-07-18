@@ -1,8 +1,5 @@
-defmodule Credo.Check.Extra.NoDbQueryInMount do
-  alias Credo.Issue
-  alias Credo.SourceFile
-  alias ExtraCredo.ASTTraversal
 
+  defmodule Credo.Check.Extra.NoDbQueryInMount do
   @moduledoc """
   No unconditional DB queries in mount/3.
 
@@ -34,6 +31,10 @@ defmodule Credo.Check.Extra.NoDbQueryInMount do
     category: :consistency,
     exit_status: 2
 
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
+
   @repo_functions ~w(all get get! one one! insert insert! update update! delete delete!)a
 
   @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
@@ -53,7 +54,7 @@ defmodule Credo.Check.Extra.NoDbQueryInMount do
   end
 
   defp check_mount_db_query(call, path, source_file) when is_tuple(call) do
-    if in_mount_3?(path) and is_repo_call?(call) and not in_connected_guard?(path) and
+    if in_mount_3?(path) and repo_call?(call) and not in_connected_guard?(path) and
          not in_assign_new_async?(path) do
       issue(source_file, call)
     else
@@ -69,8 +70,8 @@ defmodule Credo.Check.Extra.NoDbQueryInMount do
     end)
   end
 
-  @spec is_repo_call?(tuple()) :: boolean()
-  defp is_repo_call?({:., _, [inner, func]}) do
+  @spec repo_call?(tuple()) :: boolean()
+  defp repo_call?({:., _, [inner, func]}) do
     if func in @repo_functions do
       case inner do
         {:__aliases__, _, segments} -> List.last(segments) == :Repo
@@ -81,7 +82,7 @@ defmodule Credo.Check.Extra.NoDbQueryInMount do
     end
   end
 
-  defp is_repo_call?(_), do: false
+  defp repo_call?(_), do: false
 
   @spec in_connected_guard?([tuple()]) :: boolean()
   defp in_connected_guard?(path) do

@@ -1,8 +1,5 @@
-defmodule Credo.Check.Extra.ObanStructInArgs do
-  alias Credo.Issue
-  alias Credo.SourceFile
-  alias ExtraCredo.ASTTraversal
 
+  defmodule Credo.Check.Extra.ObanStructInArgs do
   @moduledoc """
   Extra Rule #9: NEVER store structs in Oban args — store IDs.
 
@@ -22,6 +19,10 @@ defmodule Credo.Check.Extra.ObanStructInArgs do
   use Credo.Check,
     category: :consistency,
     exit_status: 2
+
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
 
   @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
   @impl true
@@ -89,7 +90,7 @@ defmodule Credo.Check.Extra.ObanStructInArgs do
       structs =
         Enum.filter(pairs, fn
           {key, value} when is_atom(key) ->
-            is_struct_like?(value)
+            struct_like?(value)
 
           _ ->
             false
@@ -106,8 +107,8 @@ defmodule Credo.Check.Extra.ObanStructInArgs do
 
   defp find_structs(_, _, _), do: nil
 
-  defp is_struct_like?({:%, _, _}), do: true
-  defp is_struct_like?(_), do: false
+  defp struct_like?({:%, _, _}), do: true
+  defp struct_like?(_), do: false
 
   defp issue(source_file, _key, _value, call_meta) do
     %Issue{

@@ -1,8 +1,5 @@
-defmodule Credo.Check.Extra.NoDedupBeforeCastAssoc do
-  alias Credo.Issue
-  alias Credo.SourceFile
-  alias ExtraCredo.ASTTraversal
 
+  defmodule Credo.Check.Extra.NoDedupBeforeCastAssoc do
   @moduledoc """
   Deduplicate before cast_assoc.
 
@@ -25,6 +22,10 @@ defmodule Credo.Check.Extra.NoDedupBeforeCastAssoc do
     category: :consistency,
     exit_status: 2
 
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
+
   @dedup_functions ~w(uniq uniq_by dedup dedup_by)a
 
   @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
@@ -37,14 +38,14 @@ defmodule Credo.Check.Extra.NoDedupBeforeCastAssoc do
   end
 
   defp check_cast_assoc(call, path, source_file) when is_tuple(call) do
-    if is_cast_assoc_call?(call) and not preceded_by_dedup?(call, path) do
+    if cast_assoc_call?(call) and not preceded_by_dedup?(call, path) do
       issue(source_file, call)
     else
       nil
     end
   end
 
-  defp is_cast_assoc_call?({:., _, [inner, :cast_assoc]}) do
+  defp cast_assoc_call?({:., _, [inner, :cast_assoc]}) do
     case inner do
       {:__aliases__, _, [:Ecto, :Changeset]} ->
         true
@@ -57,8 +58,8 @@ defmodule Credo.Check.Extra.NoDedupBeforeCastAssoc do
     end
   end
 
-  defp is_cast_assoc_call?({:cast_assoc, _, _}), do: true
-  defp is_cast_assoc_call?(_), do: false
+  defp cast_assoc_call?({:cast_assoc, _, _}), do: true
+  defp cast_assoc_call?(_), do: false
 
   defp preceded_by_dedup?(call, path) do
     case Enum.find(path, fn

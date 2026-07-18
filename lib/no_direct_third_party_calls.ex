@@ -1,8 +1,5 @@
-defmodule Credo.Check.Extra.NoDirectThirdPartyCalls do
-  alias Credo.Issue
-  alias Credo.SourceFile
-  alias ExtraCredo.ASTTraversal
 
+  defmodule Credo.Check.Extra.NoDirectThirdPartyCalls do
   @moduledoc """
   Wrap third-party library APIs.
 
@@ -15,6 +12,10 @@ defmodule Credo.Check.Extra.NoDirectThirdPartyCalls do
   use Credo.Check,
     category: :consistency,
     exit_status: 2
+
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
 
   @third_party_modules ~w(HTTPoison Tesla ExAws Finch Hackney Req)
 

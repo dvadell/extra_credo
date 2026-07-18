@@ -38,7 +38,7 @@ defmodule ExtraCredo.MixProject do
       files: ["lib", "mix.exs", "README.md"],
       maintainers: ["Extra Credo Contributors"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/extra/elixir-credo-checks"}
+      links: %{"GitHub" => "https://github.com/dvadell/extra_credo"}
     ]
   end
 end

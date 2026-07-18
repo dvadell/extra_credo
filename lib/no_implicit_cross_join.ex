@@ -1,8 +1,5 @@
-defmodule Credo.Check.Extra.NoImplicitCrossJoin do
-  alias Credo.Issue
-  alias Credo.SourceFile
-  alias ExtraCredo.ASTTraversal
 
+  defmodule Credo.Check.Extra.NoImplicitCrossJoin do
   @moduledoc """
   Extra Rule #15: NO IMPLICIT CROSS JOINS in Ecto queries.
 
@@ -23,6 +20,10 @@ defmodule Credo.Check.Extra.NoImplicitCrossJoin do
     category: :design,
     exit_status: 2
 
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
+
   @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
   @impl true
   def run(%SourceFile{} = source_file, _params) do
@@ -31,7 +32,7 @@ defmodule Credo.Check.Extra.NoImplicitCrossJoin do
 
   defp check_cross_join({:from, meta, args}, source_file) when is_list(args) do
     in_count = Enum.count(args, fn arg -> is_tuple(arg) && elem(arg, 0) == :in end)
-    has_explicit_join? = Enum.any?(args, &is_join_clause?/1)
+    has_explicit_join? = Enum.any?(args, &join_clause?/1)
 
     if in_count > 1 and not has_explicit_join? do
       issue(source_file, meta)
@@ -42,11 +43,11 @@ defmodule Credo.Check.Extra.NoImplicitCrossJoin do
 
   defp check_cross_join(_, _source_file), do: nil
 
-  defp is_join_clause?([{:join, _} | _]), do: true
-  defp is_join_clause?([{:left_join, _} | _]), do: true
-  defp is_join_clause?([{:right_join, _} | _]), do: true
-  defp is_join_clause?([{:cross_join, _} | _]), do: true
-  defp is_join_clause?(_), do: false
+  defp join_clause?([{:join, _} | _]), do: true
+  defp join_clause?([{:left_join, _} | _]), do: true
+  defp join_clause?([{:right_join, _} | _]), do: true
+  defp join_clause?([{:cross_join, _} | _]), do: true
+  defp join_clause?(_), do: false
 
   defp issue(source_file, meta) do
     %Issue{

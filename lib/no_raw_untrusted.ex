@@ -1,8 +1,4 @@
 defmodule Credo.Check.Extra.NoRawUntrusted do
-  alias Credo.Issue
-  alias Credo.SourceFile
-  alias ExtraCredo.ASTTraversal
-
   @moduledoc """
   Extra Rule #12: NEVER use `raw/1` with untrusted content — XSS vulnerability.
 
@@ -23,6 +19,10 @@ defmodule Credo.Check.Extra.NoRawUntrusted do
     category: :security,
     exit_status: 2
 
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
+
   @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
   @impl true
   def run(%SourceFile{} = source_file, _params) do
@@ -35,7 +35,7 @@ defmodule Credo.Check.Extra.NoRawUntrusted do
         nil
 
       arg ->
-        if is_untrusted?(arg) do
+        if untrusted?(arg) do
           issue(source_file, arg)
         else
           nil
@@ -44,7 +44,7 @@ defmodule Credo.Check.Extra.NoRawUntrusted do
   end
 
   defp check_raw({:raw, _meta, [arg]}, source_file) do
-    if is_untrusted?(arg) do
+    if untrusted?(arg) do
       issue(source_file, arg)
     else
       nil
@@ -53,31 +53,31 @@ defmodule Credo.Check.Extra.NoRawUntrusted do
 
   defp check_raw(_, _source_file), do: nil
 
-  defp is_untrusted?({var, _, []}) when is_atom(var) do
+  defp untrusted?({var, _, []}) when is_atom(var) do
     var not in [true, false, nil, :__MODULE__]
   end
 
-  defp is_untrusted?({:@, _, [{var, _, _}]}) when is_atom(var) do
+  defp untrusted?({:@, _, [{var, _, _}]}) when is_atom(var) do
     var not in [true, false, nil, :__MODULE__]
   end
 
-  defp is_untrusted?({:get_in, _, _}), do: true
-  defp is_untrusted?({:elem, _, _}), do: true
-  defp is_untrusted?({:access_key, _, _}), do: true
-  defp is_untrusted?({:sigil_s, _, _}), do: false
-  defp is_untrusted?({:sigil_c, _, _}), do: false
-  defp is_untrusted?({:&, _, _}), do: false
-  defp is_untrusted?({:fn, _, _}), do: false
-  defp is_untrusted?({:case, _, _}), do: true
-  defp is_untrusted?({:cond, _, _}), do: true
-  defp is_untrusted?({:if, _, _}), do: true
-  defp is_untrusted?({:with, _, _}), do: true
-  defp is_untrusted?({:try, _, _}), do: true
-  defp is_untrusted?({:receive, _, _}), do: true
-  defp is_untrusted?({:for, _, _}), do: true
+  defp untrusted?({:get_in, _, _}), do: true
+  defp untrusted?({:elem, _, _}), do: true
+  defp untrusted?({:access_key, _, _}), do: true
+  defp untrusted?({:sigil_s, _, _}), do: false
+  defp untrusted?({:sigil_c, _, _}), do: false
+  defp untrusted?({:&, _, _}), do: false
+  defp untrusted?({:fn, _, _}), do: false
+  defp untrusted?({:case, _, _}), do: true
+  defp untrusted?({:cond, _, _}), do: true
+  defp untrusted?({:if, _, _}), do: true
+  defp untrusted?({:with, _, _}), do: true
+  defp untrusted?({:try, _, _}), do: true
+  defp untrusted?({:receive, _, _}), do: true
+  defp untrusted?({:for, _, _}), do: true
 
-  defp is_untrusted?({:<<>>, _, _parts}), do: false
-  defp is_untrusted?(_), do: false
+  defp untrusted?({:<<>>, _, _parts}), do: false
+  defp untrusted?(_), do: false
 
   defp issue(source_file, arg) do
     arg_name =

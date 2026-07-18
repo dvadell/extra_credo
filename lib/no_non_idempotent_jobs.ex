@@ -1,8 +1,5 @@
-defmodule Credo.Check.Extra.NoNonIdempotentJobs do
-  alias Credo.Issue
-  alias Credo.SourceFile
-  alias ExtraCredo.ASTTraversal
 
+  defmodule Credo.Check.Extra.NoNonIdempotentJobs do
   @moduledoc """
   Jobs must be idempotent.
 
@@ -34,6 +31,10 @@ defmodule Credo.Check.Extra.NoNonIdempotentJobs do
     category: :consistency,
     exit_status: 2
 
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
+
   @non_idempotent_functions ~w(insert! update! delete!)a
 
   @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
@@ -58,7 +59,7 @@ defmodule Credo.Check.Extra.NoNonIdempotentJobs do
   end
 
   defp check_non_idempotent_in_perform(call, path, source_file) when is_tuple(call) do
-    if in_perform_1?(path) and is_non_idempotent_repo_call?(call) do
+    if in_perform_1?(path) and non_idempotent_repo_call?(call) do
       issue(source_file, call)
     else
       nil
@@ -79,7 +80,7 @@ defmodule Credo.Check.Extra.NoNonIdempotentJobs do
     end)
   end
 
-  defp is_non_idempotent_repo_call?({:., _, [inner, func]}) do
+  defp non_idempotent_repo_call?({:., _, [inner, func]}) do
     if func in @non_idempotent_functions do
       case inner do
         {:__aliases__, _, segments} -> List.last(segments) == :Repo
@@ -90,7 +91,7 @@ defmodule Credo.Check.Extra.NoNonIdempotentJobs do
     end
   end
 
-  defp is_non_idempotent_repo_call?(_), do: false
+  defp non_idempotent_repo_call?(_), do: false
 
   defp issue(source_file, call) do
     {_, meta, [_, func]} = call

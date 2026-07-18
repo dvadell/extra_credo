@@ -1,8 +1,4 @@
 defmodule Credo.Check.Extra.NoLocaleInTaskClosure do
-  alias Credo.Issue
-  alias Credo.SourceFile
-  alias ExtraCredo.ASTTraversal
-
   @moduledoc """
   Capture locale before spawning.
 
@@ -30,6 +26,10 @@ defmodule Credo.Check.Extra.NoLocaleInTaskClosure do
     category: :consistency,
     exit_status: 2
 
+  alias Credo.Issue
+  alias Credo.SourceFile
+  alias ExtraCredo.ASTTraversal
+
   @gettext_funcs [:gettext, :dgettext, :gettext!, :dgettext!, :get_locale, :put_locale, :exists?]
 
   @spec run(Credo.SourceFile.t(), keyword()) :: [%Issue{}]
@@ -42,7 +42,7 @@ defmodule Credo.Check.Extra.NoLocaleInTaskClosure do
   end
 
   defp check_gettext_in_task(call, path, source_file) when is_tuple(call) do
-    if in_task_async?(path) and is_gettext_call?(call) and
+    if in_task_async?(path) and gettext_call?(call) and
          not locale_captured_before_task?(call, path) do
       issue(source_file, call)
     else
@@ -66,7 +66,7 @@ defmodule Credo.Check.Extra.NoLocaleInTaskClosure do
     end)
   end
 
-  defp is_gettext_call?(call) do
+  defp gettext_call?(call) do
     case call do
       {{:., _, [inner, func]}, _, _}
       when func in @gettext_funcs and func not in [:put_locale, :get_locale] ->

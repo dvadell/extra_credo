@@ -38,7 +38,7 @@ defmodule Credo.Check.Extra.NoCommentsAsCommitMessages do
   end
 
   defp check_comment(%{text: text, line: line_no}, source_file) do
-    trimmed = String.trim_leading(text, "#") |> String.trim()
+    trimmed = String.trim(String.trim_leading(text, "#"))
 
     cond do
       String.starts_with?(trimmed, "TODO") ->

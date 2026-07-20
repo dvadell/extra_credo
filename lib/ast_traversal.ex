@@ -69,8 +69,7 @@ defmodule ExtraCredo.ASTTraversal do
     source_file_ast = SourceFile.ast(source_file)
     ast_list = if is_tuple(source_file_ast), do: [source_file_ast], else: source_file_ast
 
-    do_collect_with_path(ast_list, fun, source_file, initial_path)
-    |> Enum.filter(&(&1 != nil))
+    Enum.filter(do_collect_with_path(ast_list, fun, source_file, initial_path), &(&1 != nil))
   end
 
   # Handle list of nodes

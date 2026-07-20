@@ -30,7 +30,7 @@ defmodule NoAssignNewInMountTest do
     source
     |> to_source_file("my_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("assign_new") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "assign_new") end)
   end
 
   test "does not flag plain assign in mount" do
@@ -81,7 +81,7 @@ defmodule NoAssignNewInMountTest do
     source
     |> to_source_file("my_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("assign_new") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "assign_new") end)
   end
 end
 
@@ -104,7 +104,7 @@ defmodule NoAuthInHandleEventTest do
     source
     |> to_source_file("my_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("authorization") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "authorization") end)
   end
 
   test "does not flag handle_event with auth check" do
@@ -162,7 +162,7 @@ defmodule NoAuthInHandleEventTest do
     |> to_source_file("my_live.ex")
     |> run_check(@check, auth_functions: ~w(may_access?))
     |> assert_issue(fn issue ->
-      assert issue.message |> String.contains?("authorization")
+      assert String.contains?(issue.message, "authorization")
     end)
   end
 
@@ -284,7 +284,7 @@ defmodule NoBareChangesetErrorTest do
     source
     |> to_source_file("my_liveview_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("changeset") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "changeset") end)
   end
 
   test "detects bare {:error, err} with named variable" do
@@ -304,7 +304,7 @@ defmodule NoBareChangesetErrorTest do
     source
     |> to_source_file("my_liveview_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("changeset") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "changeset") end)
   end
 
   test "does not flag matched changeset" do
@@ -346,7 +346,7 @@ defmodule NoBareChangesetErrorTest do
     source
     |> to_source_file("my_liveview_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("changeset") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "changeset") end)
   end
 
   test "does not flag changeset case with proper match" do
@@ -406,7 +406,7 @@ defmodule NoBareChangesetErrorTest do
     source
     |> to_source_file("my_liveview_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("changeset") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "changeset") end)
   end
 
   test "detects bare error with create_ function" do
@@ -426,7 +426,7 @@ defmodule NoBareChangesetErrorTest do
     source
     |> to_source_file("my_liveview_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("changeset") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "changeset") end)
   end
 
   test "detects bare error with cast call" do
@@ -446,7 +446,7 @@ defmodule NoBareChangesetErrorTest do
     source
     |> to_source_file("my_liveview_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("changeset") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "changeset") end)
   end
 
   test "skips non-live files for bare changeset check" do
@@ -484,7 +484,7 @@ defmodule NoBareChangesetErrorTest do
     source
     |> to_source_file("my_liveview_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("changeset") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "changeset") end)
   end
 
   test "detects bare error with delete_ function" do
@@ -504,7 +504,7 @@ defmodule NoBareChangesetErrorTest do
     source
     |> to_source_file("my_liveview_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("changeset") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "changeset") end)
   end
 
   test "detects bare error with changeset function name" do
@@ -524,7 +524,7 @@ defmodule NoBareChangesetErrorTest do
     source
     |> to_source_file("my_liveview_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("changeset") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "changeset") end)
   end
 
   test "detects bare error with insert_ function" do
@@ -544,7 +544,7 @@ defmodule NoBareChangesetErrorTest do
     source
     |> to_source_file("my_liveview_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("changeset") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "changeset") end)
   end
 
   test "skips non-matching function name" do
@@ -585,7 +585,7 @@ defmodule NoFloatForMoneyTest do
     source
     |> to_source_file("product.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?(":float") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, ":float") end)
   end
 
   test "does not flag :decimal for money field" do
@@ -630,7 +630,7 @@ defmodule NoFloatForMoneyTest do
     source
     |> to_source_file("product.ex")
     |> run_check(@check, money_keywords: ~w(bucks moolah))
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?(":float") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, ":float") end)
   end
 
   test "does not flag default money keywords when custom ones are configured and exclude them" do
@@ -664,7 +664,7 @@ defmodule NoFloatForMoneyTest do
     source
     |> to_source_file("migration.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?(":float") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, ":float") end)
   end
 end
 
@@ -685,7 +685,7 @@ defmodule NoImplicitCrossJoinTest do
     source
     |> to_source_file("query.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("cross join") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "cross join") end)
   end
 
   test "does not flag explicit join" do
@@ -784,7 +784,7 @@ defmodule NoPubsubWithoutConnectedTest do
     source
     |> to_source_file("page_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("connected?") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "connected?") end)
   end
 
   test "does not flag subscribe with connected? guard" do
@@ -822,7 +822,7 @@ defmodule NoPubsubWithoutConnectedTest do
     source
     |> to_source_file("page_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("connected?") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "connected?") end)
   end
 
   test "does not flag subscribe with Phoenix.LiveView.connected? guard" do
@@ -916,7 +916,7 @@ defmodule NoPubsubWithoutConnectedTest do
     source
     |> to_source_file("page_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("connected?") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "connected?") end)
   end
 
   test "does not flag subscribe in non-live file without guard" do
@@ -950,7 +950,7 @@ defmodule NoPubsubWithoutConnectedTest do
     source
     |> to_source_file("page_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("connected?") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "connected?") end)
   end
 end
 
@@ -971,7 +971,7 @@ defmodule NoRawUntrustedTest do
     source
     |> to_source_file("my_view.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("XSS") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "XSS") end)
   end
 
   test "does not flag raw with hardcoded string" do
@@ -1001,7 +1001,7 @@ defmodule NoRawUntrustedTest do
     source
     |> to_source_file("my_view.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("XSS") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "XSS") end)
   end
 
   test "does not flag Phoenix.HTML.raw with hardcoded string" do
@@ -1031,7 +1031,7 @@ defmodule NoRawUntrustedTest do
     source
     |> to_source_file("my_view.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("XSS") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "XSS") end)
   end
 
   test "detects raw with elem" do
@@ -1046,7 +1046,7 @@ defmodule NoRawUntrustedTest do
     source
     |> to_source_file("my_view.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("XSS") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "XSS") end)
   end
 
   test "does not flag raw with binary concatenation" do
@@ -1076,7 +1076,7 @@ defmodule NoRawUntrustedTest do
     source
     |> to_source_file("my_view.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("XSS") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "XSS") end)
   end
 
   test "detects raw with if expression" do
@@ -1091,7 +1091,7 @@ defmodule NoRawUntrustedTest do
     source
     |> to_source_file("my_view.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("XSS") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "XSS") end)
   end
 
   test "does not flag raw with function references" do
@@ -1136,7 +1136,7 @@ defmodule NoRawUntrustedTest do
     source
     |> to_source_file("my_view.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("XSS") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "XSS") end)
   end
 
   test "detects raw with with expression" do
@@ -1151,7 +1151,7 @@ defmodule NoRawUntrustedTest do
     source
     |> to_source_file("my_view.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("XSS") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "XSS") end)
   end
 
   test "detects raw with try expression" do
@@ -1166,7 +1166,7 @@ defmodule NoRawUntrustedTest do
     source
     |> to_source_file("my_view.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("XSS") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "XSS") end)
   end
 
   test "detects raw with receive expression" do
@@ -1181,7 +1181,7 @@ defmodule NoRawUntrustedTest do
     source
     |> to_source_file("my_view.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("XSS") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "XSS") end)
   end
 
   test "detects raw with access_key call" do
@@ -1196,7 +1196,7 @@ defmodule NoRawUntrustedTest do
     source
     |> to_source_file("my_view.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("XSS") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "XSS") end)
   end
 
   test "does not flag raw with charlist literal" do
@@ -1256,7 +1256,7 @@ defmodule NoRawUntrustedTest do
     source
     |> to_source_file("my_view.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("XSS") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "XSS") end)
   end
 
   test "does not flag Phoenix.HTML.raw with no args" do
@@ -1286,7 +1286,7 @@ defmodule NoRawUntrustedTest do
     source
     |> to_source_file("my_view.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("XSS") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "XSS") end)
   end
 end
 
@@ -1311,7 +1311,7 @@ defmodule UnpinnedQueryBindingsTest do
     source
     |> to_source_file("query.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("pin") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "pin") end)
   end
 
   test "does not flag query where all variables are pinned" do
@@ -1341,7 +1341,7 @@ defmodule UnpinnedQueryBindingsTest do
     source
     |> to_source_file("query.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("pin") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "pin") end)
   end
 
   test "does not flag pinned variable in where/3 keyword query" do
@@ -1371,7 +1371,7 @@ defmodule UnpinnedQueryBindingsTest do
     source
     |> to_source_file("query.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("pin") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "pin") end)
   end
 
   test "does not flag pinned variable in dynamic/2 expression" do
@@ -1402,7 +1402,7 @@ defmodule UnpinnedQueryBindingsTest do
     source
     |> to_source_file("query.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("pin") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "pin") end)
   end
 
   test "does not flag pinned variable in piped where/3" do
@@ -1435,7 +1435,7 @@ defmodule UnpinnedQueryBindingsTest do
     source
     |> to_source_file("query.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("pin") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "pin") end)
   end
 
   test "detects unpinned variable in order_by" do
@@ -1466,7 +1466,7 @@ defmodule UnpinnedQueryBindingsTest do
     source
     |> to_source_file("query.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("pin") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "pin") end)
   end
 
   test "detects unpinned variable with and/or in where" do
@@ -1481,7 +1481,7 @@ defmodule UnpinnedQueryBindingsTest do
     source
     |> to_source_file("query.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("pin") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "pin") end)
   end
 
   test "detects unpinned variable in from with join" do
@@ -1496,7 +1496,7 @@ defmodule UnpinnedQueryBindingsTest do
     source
     |> to_source_file("query.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("pin") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "pin") end)
   end
 end
 
@@ -1519,7 +1519,7 @@ defmodule ObanAtomKeysTest do
     source
     |> to_source_file("my_worker.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("atom key") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "atom key") end)
   end
 
   test "does not flag string keys in Oban worker" do
@@ -1570,7 +1570,7 @@ defmodule ObanAtomKeysTest do
     source
     |> to_source_file("some_job.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("atom key") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "atom key") end)
   end
 
   test "detects atom keys with alt pattern match" do
@@ -1587,7 +1587,7 @@ defmodule ObanAtomKeysTest do
     source
     |> to_source_file("my_worker.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("atom key") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "atom key") end)
   end
 
   test "skips non-matching struct pattern in worker" do
@@ -1692,7 +1692,7 @@ defmodule NoExternalResourceTest do
     |> to_source_file("module.ex")
     |> run_check(@check)
     |> assert_issue(fn issue ->
-      assert issue.message |> String.contains?("@external_resource")
+      assert String.contains?(issue.message, "@external_resource")
     end)
   end
 
@@ -1736,7 +1736,7 @@ defmodule NoExternalResourceTest do
     |> to_source_file("module.ex")
     |> run_check(@check)
     |> assert_issue(fn issue ->
-      assert issue.message |> String.contains?("@external_resource")
+      assert String.contains?(issue.message, "@external_resource")
     end)
   end
 end
@@ -1775,7 +1775,7 @@ defmodule ObanStructInArgsTest do
     source
     |> to_source_file("my_app.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("struct") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "struct") end)
   end
 
   test "detects struct in MyApp.Worker.new args" do
@@ -1792,7 +1792,7 @@ defmodule ObanStructInArgsTest do
     source
     |> to_source_file("my_worker.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("struct") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "struct") end)
   end
 
   test "detects struct in MyApp.Worker.perform_async args" do
@@ -1809,7 +1809,7 @@ defmodule ObanStructInArgsTest do
     source
     |> to_source_file("my_worker.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("struct") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "struct") end)
   end
 
   test "does not flag plain map in Oban.insert!" do
@@ -1839,7 +1839,7 @@ defmodule ObanStructInArgsTest do
     source
     |> to_source_file("my_app.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("struct") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "struct") end)
   end
 
   test "skips non-struct map values in args" do
@@ -1970,7 +1970,7 @@ defmodule NoCommentsAsCommitMessagesTest do
     source
     |> to_source_file("module.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("TODO") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "TODO") end)
   end
 
   test "detects issue references" do
@@ -1986,7 +1986,7 @@ defmodule NoCommentsAsCommitMessagesTest do
     source
     |> to_source_file("module.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("issue reference") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "issue reference") end)
   end
 
   test "does not flag explanatory comments" do
@@ -2018,7 +2018,7 @@ defmodule NoCommentsAsCommitMessagesTest do
     source
     |> to_source_file("module.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("FIXME") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "FIXME") end)
   end
 
   test "detects HACK comments" do
@@ -2034,7 +2034,7 @@ defmodule NoCommentsAsCommitMessagesTest do
     source
     |> to_source_file("module.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("HACK") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "HACK") end)
   end
 
   test "detects XXX comments" do
@@ -2050,7 +2050,7 @@ defmodule NoCommentsAsCommitMessagesTest do
     source
     |> to_source_file("module.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("XXX") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "XXX") end)
   end
 
   test "detects PR/URL references" do
@@ -2066,7 +2066,7 @@ defmodule NoCommentsAsCommitMessagesTest do
     source
     |> to_source_file("module.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("PR/URL") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "PR/URL") end)
   end
 
   test "handles parse errors gracefully" do
@@ -2095,7 +2095,7 @@ defmodule NoCommentsAsCommitMessagesTest do
     source
     |> to_source_file("module.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("commit") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "commit") end)
   end
 
   test "detects invalid syntax comment silently" do
@@ -2150,7 +2150,7 @@ defmodule NoDbQueryInMountTest do
     source
     |> to_source_file("my_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("mount") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "mount") end)
   end
 
   test "does not flag Repo.get inside connected? guard" do
@@ -2264,7 +2264,7 @@ defmodule NoDbQueryInMountTest do
     source
     |> to_source_file("my_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("mount") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "mount") end)
   end
 
   test "does not flag Repo call outside mount" do
@@ -2300,7 +2300,7 @@ defmodule NoDbQueryInMountTest do
     source
     |> to_source_file("my_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("mount") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "mount") end)
   end
 
   test "does not flag guarded by non-connected? condition" do
@@ -2320,7 +2320,7 @@ defmodule NoDbQueryInMountTest do
     source
     |> to_source_file("my_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("mount") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "mount") end)
   end
 end
 
@@ -2341,7 +2341,7 @@ defmodule NoDedupBeforeCastAssocTest do
     source
     |> to_source_file("context.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("cast_assoc") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "cast_assoc") end)
   end
 
   test "does not flag cast_assoc with preceding dedup" do
@@ -2388,7 +2388,7 @@ defmodule NoDedupBeforeCastAssocTest do
     source
     |> to_source_file("context.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("cast_assoc") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "cast_assoc") end)
   end
 
   test "detects cast_assoc via dot module access" do
@@ -2403,7 +2403,7 @@ defmodule NoDedupBeforeCastAssocTest do
     source
     |> to_source_file("context.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("cast_assoc") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "cast_assoc") end)
   end
 
   test "does not flag cast_assoc without dedup but with bare cast_assoc call" do
@@ -2418,7 +2418,7 @@ defmodule NoDedupBeforeCastAssocTest do
     source
     |> to_source_file("context.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("cast_assoc") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "cast_assoc") end)
   end
 end
 
@@ -2439,7 +2439,7 @@ defmodule NoDirectThirdPartyCallsTest do
     source
     |> to_source_file("context.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("HTTPoison") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "HTTPoison") end)
   end
 
   test "does not flag non-third-party calls" do
@@ -2469,7 +2469,7 @@ defmodule NoDirectThirdPartyCallsTest do
     source
     |> to_source_file("context.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("Tesla") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "Tesla") end)
   end
 
   test "detects custom module configured via params" do
@@ -2484,7 +2484,7 @@ defmodule NoDirectThirdPartyCallsTest do
     source
     |> to_source_file("context.ex")
     |> run_check(@check, modules: ~w(MyCustomHTTP))
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("MyCustomHTTP") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "MyCustomHTTP") end)
   end
 
   test "does not flag variable-based remote calls" do
@@ -2522,7 +2522,7 @@ defmodule NoLocaleInTaskClosureTest do
     source
     |> to_source_file("module.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("locale") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "locale") end)
   end
 
   test "does not flag when locale is captured" do
@@ -2558,7 +2558,7 @@ defmodule NoLocaleInTaskClosureTest do
     source
     |> to_source_file("module.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("locale") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "locale") end)
   end
 
   test "does not flag Gettext.gettext without Task" do
@@ -2613,7 +2613,7 @@ defmodule NoNonIdempotentJobsTest do
     source
     |> to_source_file("worker.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("insert!") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "insert!") end)
   end
 
   test "does not flag non-bang Repo.insert in perform/1" do
@@ -2652,7 +2652,7 @@ defmodule NoNonIdempotentJobsTest do
     source
     |> to_source_file("worker.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("update!") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "update!") end)
   end
 
   test "detects Repo.delete! in perform/1" do
@@ -2670,7 +2670,7 @@ defmodule NoNonIdempotentJobsTest do
     source
     |> to_source_file("worker.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("delete!") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "delete!") end)
   end
 
   test "skips perform with non-oban struct arg" do
@@ -2791,7 +2791,7 @@ defmodule NoUnsupervisedProcessesTest do
     source
     |> to_source_file("module.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("supervisor") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "supervisor") end)
   end
 
   test "does not flag GenServer.start_link inside children/1" do
@@ -2825,7 +2825,7 @@ defmodule NoUnsupervisedProcessesTest do
     source
     |> to_source_file("module.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("supervisor") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "supervisor") end)
   end
 
   test "detects Agent.start outside supervisor" do
@@ -2840,7 +2840,7 @@ defmodule NoUnsupervisedProcessesTest do
     source
     |> to_source_file("module.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("supervisor") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "supervisor") end)
   end
 
   test "does not flag process start inside defmodule ending in Supervisor" do
@@ -2873,7 +2873,7 @@ defmodule NoUnsupervisedProcessesTest do
     source
     |> to_source_file("module.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("supervisor") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "supervisor") end)
   end
 
   test "detects GenServer.start outside supervisor" do
@@ -2888,7 +2888,7 @@ defmodule NoUnsupervisedProcessesTest do
     source
     |> to_source_file("module.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("supervisor") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "supervisor") end)
   end
 
   test "detects start_link outside children function" do
@@ -2903,7 +2903,7 @@ defmodule NoUnsupervisedProcessesTest do
     source
     |> to_source_file("supervisor.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("supervisor") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "supervisor") end)
   end
 
   test "does not flag GenServer.start_link in children" do
@@ -3009,7 +3009,7 @@ defmodule NoNonIdempotentExtraTest do
     source
     |> to_source_file("worker.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("update!") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "update!") end)
   end
 
   test "detects Repo.delete! in perform" do
@@ -3027,7 +3027,7 @@ defmodule NoNonIdempotentExtraTest do
     source
     |> to_source_file("worker.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("delete!") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "delete!") end)
   end
 
   test "does not flag perform with variable args" do
@@ -3064,7 +3064,7 @@ defmodule NoExternalResourceExtraTest do
     |> to_source_file("module.ex")
     |> run_check(@check)
     |> assert_issue(fn issue ->
-      assert issue.message |> String.contains?("@external_resource")
+      assert String.contains?(issue.message, "@external_resource")
     end)
   end
 
@@ -3104,7 +3104,7 @@ defmodule NoAssignNewInMountExtraTest do
     source
     |> to_source_file("my_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("assign_new") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "assign_new") end)
   end
 
   test "does not flag assign_new with string key" do
@@ -3122,7 +3122,7 @@ defmodule NoAssignNewInMountExtraTest do
     source
     |> to_source_file("my_live.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?("key") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, "key") end)
   end
 end
 
@@ -3147,7 +3147,7 @@ defmodule NoFloatForMoneyExtraTest do
     source
     |> to_source_file("migration.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?(":float") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, ":float") end)
   end
 
   test "detects configurable money keywords with add" do
@@ -3166,7 +3166,7 @@ defmodule NoFloatForMoneyExtraTest do
     source
     |> to_source_file("migration.ex")
     |> run_check(@check)
-    |> assert_issue(fn issue -> assert issue.message |> String.contains?(":float") end)
+    |> assert_issue(fn issue -> assert String.contains?(issue.message, ":float") end)
   end
 end
 
@@ -3188,7 +3188,7 @@ defmodule NoColorfulEmojiTest do
     |> to_source_file("my_module.ex")
     |> run_check(@check)
     |> assert_issue(fn issue ->
-      assert issue.message |> String.contains?("emoji")
+      assert String.contains?(issue.message, "emoji")
       assert issue.trigger == "\u2705"
       assert issue.line_no == 3
     end)
@@ -3207,7 +3207,7 @@ defmodule NoColorfulEmojiTest do
     |> to_source_file("my_module.ex")
     |> run_check(@check)
     |> assert_issue(fn issue ->
-      assert issue.message |> String.contains?("emoji")
+      assert String.contains?(issue.message, "emoji")
       assert issue.trigger == "\u2605"
     end)
   end
@@ -3225,7 +3225,7 @@ defmodule NoColorfulEmojiTest do
     |> to_source_file("my_module.ex")
     |> run_check(@check)
     |> assert_issue(fn issue ->
-      assert issue.message |> String.contains?("emoji")
+      assert String.contains?(issue.message, "emoji")
       assert issue.trigger == "\u{1F680}"
     end)
   end
@@ -3241,7 +3241,7 @@ defmodule NoColorfulEmojiTest do
     |> to_source_file("my_module.ex")
     |> run_check(@check)
     |> assert_issue(fn issue ->
-      assert issue.message |> String.contains?("emoji")
+      assert String.contains?(issue.message, "emoji")
     end)
   end
 

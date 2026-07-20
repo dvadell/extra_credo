@@ -70,27 +70,8 @@
           {Credo.Check.Warning.IoInspect, []},
           {Credo.Check.Warning.Dbg, []},
 
-          # --- Custom Extra Checks ---
-          {Credo.Check.Extra.NoFloatForMoney, []},
-          {Credo.Check.Extra.NoBareChangesetError, []},
-          {Credo.Check.Extra.NoAssignNewInMount, []},
-          {Credo.Check.Extra.NoAuthInHandleEvent, []},
-          {Credo.Check.Extra.NoExternalResource, []},
-          {Credo.Check.Extra.NoImplicitCrossJoin, []},
-          {Credo.Check.Extra.NoPubsubWithoutConnected, []},
-          {Credo.Check.Extra.NoRawUntrusted, []},
-          {Credo.Check.Extra.ObanAtomKeys, []},
-          {Credo.Check.Extra.ObanStructInArgs, []},
-          {Credo.Check.Extra.UnpinnedQueryBindings, []},
-          {Credo.Check.Extra.NoCommentsAsCommitMessages, []},
-          {Credo.Check.Extra.NoDbQueryInMount, []},
-          {Credo.Check.Extra.NoDedupBeforeCastAssoc, []},
-          {Credo.Check.Extra.NoDirectThirdPartyCalls, []},
-          {Credo.Check.Extra.NoLocaleInTaskClosure, []},
-          {Credo.Check.Extra.NoNonIdempotentJobs, []},
-          {Credo.Check.Extra.NoUnsupervisedProcesses, []},
-          {Credo.Check.Extra.NoColorfulEmoji, []}
-        ]
+          # --- Custom Extra Checks (all at once) ---
+        ] ++ Enum.map(ExtraCredo.checks(), &{&1, []})
       }
     }
   ]

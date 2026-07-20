@@ -18,7 +18,7 @@ defmodule IssueStructFieldsTest do
   defp check_name(module), do: module |> Module.split() |> List.last()
 
   defp source_path(module) do
-    module.module_info(:compile)[:source] |> List.to_string()
+    List.to_string(module.module_info(:compile)[:source])
   end
 
   defp issue_blocks(module) do
@@ -42,8 +42,7 @@ defmodule IssueStructFieldsTest do
   defp struct_line?(line), do: line =~ ~r/^\s*%Issue\{$/
 
   defp collect_block(lines) do
-    lines
-    |> Enum.reduce_while({"", 0}, fn line, {acc, depth} ->
+    Enum.reduce_while(lines, {"", 0}, fn line, {acc, depth} ->
       opens = count_brace(line, ?{)
       closes = count_brace(line, ?})
       new_depth = depth + opens - closes

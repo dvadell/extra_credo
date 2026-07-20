@@ -2,9 +2,10 @@ defmodule Credo.Check.Extra.NoSingleStepPipeline do
   @moduledoc """
   Forbid pipelines with only one function call.
 
-  A single-step pipeline like `user |> update(opts)` adds no readability benefit
-  over the direct call `update(user, opts)`. Pipelines are useful when chaining
-  multiple operations, but a lone pipe is just noise.
+  `Credo.Check.Refactor.PipeChainStart` requires pipelines to start with a
+  variable. This check goes further: when a pipeline has exactly two members
+  AND starts with a variable (i.e. `PipeChainStart` would pass), it should be
+  rewritten as a direct function call.
 
   ## Examples (non-compliant)
 
@@ -22,6 +23,9 @@ defmodule Credo.Check.Extra.NoSingleStepPipeline do
       user
       |> update(opts)
       |> save()
+
+      # Pipeline starts with a function — PipeChainStart already handles this
+      update(opts) |> save()
   """
 
   use Credo.Check,
@@ -39,10 +43,16 @@ defmodule Credo.Check.Extra.NoSingleStepPipeline do
     end)
   end
 
+  # A local function call: {name, meta, args} where args is a list
+  defp function_start?({_name, _meta, args}) when is_list(args), do: true
+  # A remote function call: {{:., dot_meta, [mod, fun]}, meta, args}
+  defp function_start?({{:., _, _}, _, _}), do: true
+  defp function_start?(_), do: false
+
   defp check_pipe({:|>, meta, [lhs, _rhs]}, path, source_file) do
     parent_is_pipe? = path != [] and match?({:|>, _, _}, hd(path))
 
-    if parent_is_pipe? or match?({:|>, _, _}, lhs) do
+    if parent_is_pipe? or match?({:|>, _, _}, lhs) or function_start?(lhs) do
       nil
     else
       %Issue{

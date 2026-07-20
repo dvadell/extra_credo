@@ -62,16 +62,7 @@ defmodule Credo.Check.Extra.NoSingleStepPipeline do
         check: __MODULE__,
         category: :design,
         message: """
-        Avoid a pipeline with only one function.
-
-        A single-step pipe adds no readability benefit over a direct call.
-        Only use the pipe operator when chaining multiple operations.
-
-          # Instead of this:
-          user |> update(opts)
-
-          # Write this:
-          update(user, opts)
+        Pipelines with a single function add no readability benefit. Use a direct call instead.
         """
       }
     end

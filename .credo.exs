@@ -88,8 +88,8 @@
           {Credo.Check.Extra.NoDirectThirdPartyCalls, []},
           {Credo.Check.Extra.NoLocaleInTaskClosure, []},
           {Credo.Check.Extra.NoNonIdempotentJobs, []},
-           {Credo.Check.Extra.NoUnsupervisedProcesses, []},
-           {Credo.Check.Extra.NoColorfulEmoji, []}
+          {Credo.Check.Extra.NoUnsupervisedProcesses, []},
+          {Credo.Check.Extra.NoColorfulEmoji, []}
         ]
       }
     }

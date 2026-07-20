@@ -27,7 +27,8 @@ defmodule ExtraCredo do
                 {Credo.Check.Extra.NoRawUntrusted, []},
                 {Credo.Check.Extra.ObanAtomKeys, []},
                 {Credo.Check.Extra.ObanStructInArgs, []},
-                {Credo.Check.Extra.UnpinnedQueryBindings, []}
+                {Credo.Check.Extra.UnpinnedQueryBindings, []},
+                {Credo.Check.Extra.NoSingleStepPipeline, []}
               ]
             }
           }
@@ -59,7 +60,8 @@ defmodule ExtraCredo do
       Credo.Check.Extra.ObanAtomKeys,
       Credo.Check.Extra.ObanStructInArgs,
       Credo.Check.Extra.UnpinnedQueryBindings,
-      Credo.Check.Extra.NoColorfulEmoji
+      Credo.Check.Extra.NoColorfulEmoji,
+      Credo.Check.Extra.NoSingleStepPipeline
     ]
   end
 end

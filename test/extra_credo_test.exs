@@ -4,7 +4,7 @@ defmodule ExtraCredoTest do
   test "returns all check modules" do
     checks = ExtraCredo.checks()
     assert is_list(checks)
-    assert length(checks) == 19
+    assert length(checks) == 20
     assert Credo.Check.Extra.NoFloatForMoney in checks
   end
 end
@@ -3272,6 +3272,117 @@ defmodule NoColorfulEmojiTest do
 
       def my_func do
         :ok
+      end
+    end
+    """
+
+    source
+    |> to_source_file("my_module.ex")
+    |> run_check(@check)
+    |> refute_issues()
+  end
+end
+
+defmodule NoSingleStepPipelineTest do
+  use Credo.Test.Case
+
+  @check Credo.Check.Extra.NoSingleStepPipeline
+
+  test "detects single-step pipeline" do
+    source = """
+    defmodule MyModule do
+      def update_user(user, opts) do
+        user |> update(opts)
+      end
+    end
+    """
+
+    issues =
+      source
+      |> to_source_file("my_module.ex")
+      |> run_check(@check)
+
+    assert length(issues) == 1
+  end
+
+  test "detects single-step pipeline with module function" do
+    source = """
+    defmodule MyModule do
+      def inspect_value(value) do
+        value |> IO.inspect()
+      end
+    end
+    """
+
+    issues =
+      source
+      |> to_source_file("my_module.ex")
+      |> run_check(@check)
+
+    assert length(issues) == 1
+  end
+
+  test "does not flag multi-step pipeline" do
+    source = """
+    defmodule MyModule do
+      def process(user, opts) do
+        user
+        |> update(opts)
+        |> save()
+      end
+    end
+    """
+
+    source
+    |> to_source_file("my_module.ex")
+    |> run_check(@check)
+    |> refute_issues()
+  end
+
+  test "does not flag direct function call" do
+    source = """
+    defmodule MyModule do
+      def update_user(user, opts) do
+        update(user, opts)
+      end
+    end
+    """
+
+    source
+    |> to_source_file("my_module.ex")
+    |> run_check(@check)
+    |> refute_issues()
+  end
+
+  test "detects multiple single-step pipelines in same file" do
+    source = """
+    defmodule MyModule do
+      def a do
+        x |> parse()
+      end
+
+      def b do
+        y |> validate()
+      end
+    end
+    """
+
+    issues =
+      source
+      |> to_source_file("my_module.ex")
+      |> run_check(@check)
+
+    assert length(issues) == 2
+  end
+
+  test "does not flag nested multi-step pipeline" do
+    source = """
+    defmodule MyModule do
+      def chain(data) do
+        data
+        |> step1()
+        |> step2()
+        |> step3()
       end
     end
     """

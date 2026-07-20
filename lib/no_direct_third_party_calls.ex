@@ -30,17 +30,15 @@ defmodule Credo.Check.Extra.NoDirectThirdPartyCalls do
     )
   end
 
-  defp check_direct_call({:., meta, [inner, _func]}, source_file, modules) do
-    case inner do
-      {:__aliases__, _, segments} ->
-        if to_string(List.last(segments)) in modules do
-          issue(source_file, meta, List.last(segments))
-        else
-          nil
-        end
-
-      _ ->
-        nil
+  defp check_direct_call(
+         {:., _dot_meta, [{:__aliases__, alias_meta, segments}, _func]},
+         source_file,
+         modules
+       ) do
+    if to_string(List.last(segments)) in modules do
+      issue(source_file, alias_meta, List.last(segments))
+    else
+      nil
     end
   end
 

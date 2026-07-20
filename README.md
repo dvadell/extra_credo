@@ -56,6 +56,7 @@ Then register the checks in `.credo.exs`:
 | `ObanStructInArgs` | Flags structs passed as Oban job args. Structs lose their `__struct__` field during JSON serialization. |
 | `NoAuthInHandleEvent` | Ensures every LiveView `handle_event` callback contains an authorization check, since mount-time authorization can be bypassed via WebSocket. |
 | `NoRawUntrusted` | Flags `raw/1` calls with potentially untrusted input to prevent XSS vulnerabilities. |
+| `NoSingleStepPipeline` | Flags pipelines with only one function call (e.g. `user \|> update(opts)`). Use a direct function call instead. |
 | `NoImplicitCrossJoin` | Flags Ecto queries with multiple `from` bindings missing explicit `join` clauses, preventing Cartesian products. |
 | `NoExternalResource` | Flags compile-time file reads (`File.read!`, etc.) at the module level that lack a corresponding `@external_resource` declaration. |
 | `NoAssignNewInMount` | Flags `assign_new` usage in `mount/3` for values that should be refreshed on every page load. |

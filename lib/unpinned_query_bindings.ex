@@ -18,7 +18,7 @@ defmodule Credo.Check.Extra.UnpinnedQueryBindings do
   """
 
   use Credo.Check,
-    category: :security,
+    category: :warning,
     exit_status: 2
 
   alias Credo.Issue
@@ -148,7 +148,7 @@ defmodule Credo.Check.Extra.UnpinnedQueryBindings do
       line_no: meta[:line] || 0,
       trigger: Issue.no_trigger(),
       check: __MODULE__,
-      category: :security,
+      category: :warning,
       message:
         "Variable #{var} used in Ecto query without ^ pin operator. Use ^#{var} to bind outer-scope variables. Unpinned variables are treated as column references, which can cause SQL injection."
     }

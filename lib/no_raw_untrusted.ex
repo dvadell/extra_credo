@@ -16,7 +16,7 @@ defmodule Credo.Check.Extra.NoRawUntrusted do
   """
 
   use Credo.Check,
-    category: :security,
+    category: :warning,
     exit_status: 2
 
   alias Credo.Issue
@@ -91,7 +91,7 @@ defmodule Credo.Check.Extra.NoRawUntrusted do
       line_no: line_from_ast(arg),
       trigger: Issue.no_trigger(),
       check: __MODULE__,
-      category: :security,
+      category: :warning,
       message:
         "raw/1 used with potentially untrusted input (#{arg_name}). This is an XSS vulnerability. Only use raw/1 with hardcoded, trusted HTML strings."
     }

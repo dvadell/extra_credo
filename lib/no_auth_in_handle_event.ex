@@ -36,7 +36,7 @@ defmodule Credo.Check.Extra.NoAuthInHandleEvent do
   """
 
   use Credo.Check,
-    category: :security,
+    category: :warning,
     exit_status: 2
 
   alias Credo.Issue
@@ -110,7 +110,7 @@ defmodule Credo.Check.Extra.NoAuthInHandleEvent do
       line_no: meta[:line] || 0,
       trigger: Issue.no_trigger(),
       check: __MODULE__,
-      category: :security,
+      category: :warning,
       message:
         "handle_event without authorization check. Mount-time authorization is insufficient — users can call events directly via WebSocket. Add an authorized?/authorize check in every handle_event."
     }

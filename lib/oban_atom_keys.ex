@@ -89,11 +89,8 @@ defmodule Credo.Check.Extra.ObanAtomKeys do
       trigger: Issue.no_trigger(),
       check: __MODULE__,
       category: :consistency,
-      message: """
-        Oban worker uses atom key #{key} in args pattern. Oban serializes args as\n" <>
-        "JSON (string keys). Use \"#{key}\" => instead of #{key}:.\n\n" <>
-        "  def perform(%Oban.Job{args: %{"#{key}" => id}}) do\n"
-      """
+      message:
+        "Oban worker uses atom key #{key} in args pattern. Oban serializes args as JSON (string keys). Use \"#{key}\" => instead of #{key}:."
     }
   end
 end

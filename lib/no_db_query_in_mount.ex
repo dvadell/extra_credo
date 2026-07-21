@@ -122,15 +122,8 @@ defmodule Credo.Check.Extra.NoDbQueryInMount do
       trigger: Issue.no_trigger(),
       check: __MODULE__,
       category: :consistency,
-      message: """
-      Repo.#{func}/N in mount/3 without connected? guard. Mount runs twice
-      (init + socket connected), causing duplicate queries. Wrap in
-      `if connected?(socket) do ... end` or use assign_async/3.
-
-        if connected?(socket) do
-          #{func}(...)
-        end
-      """
+      message:
+        "Repo.#{func}/N in mount/3 without connected? guard. Mount runs twice (init + socket connected), causing duplicate queries. Wrap in `if connected?(socket) do ... end` or use assign_async/3."
     }
   end
 end

@@ -75,13 +75,8 @@ defmodule Credo.Check.Extra.NoAssignNewInMount do
       trigger: Issue.no_trigger(),
       check: __MODULE__,
       category: :consistency,
-      message: """
-      assign_new(:#{key_str}) in mount — value won't refresh on subsequent visits.
-      assign_new/3 skips if the key exists, causing stale data. Use assign/3
-      for values that must update every mount (locale, current_user, etc.).
-
-        assign(socket, :#{key_str}, get_#{key_str}())
-      """
+      message:
+        "assign_new(:#{key_str}) in mount — value won't refresh on subsequent visits. assign_new/3 skips if the key exists, causing stale data. Use assign/3 for values that must update every mount."
     }
   end
 end

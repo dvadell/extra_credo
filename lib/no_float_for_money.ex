@@ -84,13 +84,8 @@ defmodule Credo.Check.Extra.NoFloatForMoney do
       trigger: Issue.no_trigger(),
       check: __MODULE__,
       category: :design,
-      message: """
-      Field "#{field_name}" appears to be money-related but uses :float.
-      Use :decimal or :integer (cents). See Extra Rule #4.
-
-        field :#{field_name}, :decimal      # For exact decimals
-        field :#{field_name}, :integer       # For smallest currency units
-      """
+      message:
+        "Field \"#{field_name}\" appears to be money-related but uses :float. Use :decimal or :integer (cents)."
     }
   end
 

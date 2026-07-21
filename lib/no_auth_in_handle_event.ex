@@ -112,10 +112,7 @@ defmodule Credo.Check.Extra.NoAuthInHandleEvent do
       check: __MODULE__,
       category: :security,
       message:
-        "handle_event without authorization check. Mount-time authorization is\n" <>
-          "insufficient — users can call events directly via WebSocket. Add an\n" <>
-          "authorized?/authorize check in every handle_event.\n\n" <>
-          "  if authorized?(user, :action, resource) do\n"
+        "handle_event without authorization check. Mount-time authorization is insufficient — users can call events directly via WebSocket. Add an authorized?/authorize check in every handle_event."
     }
   end
 end

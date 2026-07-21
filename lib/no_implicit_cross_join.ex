@@ -55,13 +55,8 @@ defmodule Credo.Check.Extra.NoImplicitCrossJoin do
       trigger: Issue.no_trigger(),
       check: __MODULE__,
       category: :design,
-      message: """
-        Implicit cross join detected — from(a in A, b in B) without join: on: ...
-        creates a Cartesian product. Use explicit join with an on: condition.\n\n" <>
-        "  from(a in Account,\n" <>
-        "       join: b in assoc(a, :bookings),\n" <>
-        "       on: true)\n"
-      """
+      message:
+        "Implicit cross join detected — from(a in A, b in B) without join: on: ... creates a Cartesian product. Use explicit join with an on: condition."
     }
   end
 end

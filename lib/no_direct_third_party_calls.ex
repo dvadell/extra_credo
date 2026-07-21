@@ -55,12 +55,7 @@ defmodule Credo.Check.Extra.NoDirectThirdPartyCalls do
       check: __MODULE__,
       category: :consistency,
       message:
-        "Direct #{module_str} call in context module. Third-party library APIs\n" <>
-          "should be wrapped in a dedicated module (e.g. MyApp.HttpClient) so they\n" <>
-          "can be mocked in tests and swapped without touching business logic.\n\n" <>
-          "  defmodule MyApp.HttpClient do\n" <>
-          "    def get(url), do: #{module_str}.get(url)\n" <>
-          "  end"
+        "Direct #{module_str} call in context module. Third-party library APIs should be wrapped in a dedicated module (e.g. MyApp.HttpClient) so they can be mocked in tests and swapped without touching business logic."
     }
   end
 end

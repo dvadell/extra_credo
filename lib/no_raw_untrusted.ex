@@ -92,11 +92,8 @@ defmodule Credo.Check.Extra.NoRawUntrusted do
       trigger: Issue.no_trigger(),
       check: __MODULE__,
       category: :security,
-      message: """
-        raw/1 used with potentially untrusted input (#{arg_name}). This is an XSS\n" <>
-        "vulnerability. Only use raw/1 with hardcoded, trusted HTML strings.\n\n" <>
-        "  <%= @user_bio %>\n"
-      """
+      message:
+        "raw/1 used with potentially untrusted input (#{arg_name}). This is an XSS vulnerability. Only use raw/1 with hardcoded, trusted HTML strings."
     }
   end
 

@@ -149,12 +149,8 @@ defmodule Credo.Check.Extra.UnpinnedQueryBindings do
       trigger: Issue.no_trigger(),
       check: __MODULE__,
       category: :security,
-      message: """
-        Variable #{var} used in Ecto query without ^ pin operator.\n" <>
-        "Use ^#{var} to bind outer-scope variables. Unpinned variables are treated\n" <>
-        "as column references, which can cause SQL injection.\n\n" <>
-        "  from(u in User, where: u.id == ^#{var})\n"
-      """
+      message:
+        "Variable #{var} used in Ecto query without ^ pin operator. Use ^#{var} to bind outer-scope variables. Unpinned variables are treated as column references, which can cause SQL injection."
     }
   end
 end

@@ -155,13 +155,8 @@ defmodule Credo.Check.Extra.NoBareChangesetError do
       trigger: Issue.no_trigger(),
       check: __MODULE__,
       category: :consistency,
-      message: """
-        Bare {:error, _} in handle_event — changeset errors are swallowed and the\n" <>
-        "form won't re-render validation errors. Match {:error, %Ecto.Changeset{}\n" <>
-        "= cs} explicitly to pass the changeset to to_form/1.\n\n" <>
-        "  {:error, %Ecto.Changeset{} = cs} ->\n" <>
-        "    {:noreply, assign(socket, form: to_form(cs))}\n"
-      """
+      message:
+        "Bare {:error, _} in handle_event — changeset errors are swallowed and the form won't re-render validation errors. Match {:error, %Ecto.Changeset{} = cs} explicitly to pass the changeset to to_form/1."
     }
   end
 end

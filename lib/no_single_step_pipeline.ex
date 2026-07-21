@@ -61,9 +61,8 @@ defmodule Credo.Check.Extra.NoSingleStepPipeline do
         trigger: Issue.no_trigger(),
         check: __MODULE__,
         category: :design,
-        message: """
-        Pipelines with a single function add no readability benefit. Use a direct call instead.
-        """
+        message:
+          "Pipelines with a single function add no readability benefit. Use a direct call instead."
       }
     end
   end

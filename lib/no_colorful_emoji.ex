@@ -44,9 +44,7 @@ defmodule Credo.Check.Extra.NoColorfulEmoji do
       trigger: emoji,
       check: __MODULE__,
       category: :consistency,
-      message: """
-      Colorful emoji found: #{emoji} -- use plain text instead.
-      """
+      message: "Colorful emoji found: #{emoji} -- use plain text instead."
     }
   end
 end

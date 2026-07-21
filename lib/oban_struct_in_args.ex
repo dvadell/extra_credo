@@ -116,11 +116,8 @@ defmodule Credo.Check.Extra.ObanStructInArgs do
       trigger: Issue.no_trigger(),
       check: __MODULE__,
       category: :consistency,
-      message: """
-        Oban args contain a struct. Oban serializes args to JSON, losing\n" <>
-        "the __struct__ field. Store an ID and fetch the struct in perform/1.\n\n" <>
-        "  MyApp.Worker.perform_async(%{user_id: user.id})\n"
-      """
+      message:
+        "Oban args contain a struct. Oban serializes args to JSON, losing the __struct__ field. Store an ID and fetch the struct in perform/1."
     }
   end
 end

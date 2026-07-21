@@ -104,16 +104,8 @@ defmodule Credo.Check.Extra.NoNonIdempotentJobs do
       trigger: Issue.no_trigger(),
       check: __MODULE__,
       category: :consistency,
-      message: """
-        Repo.#{func_str} used in a job perform/1 function. Jobs may be retried on\n" <>
-        "failure, so non-idempotent operations cause errors or duplicate data.\n\n" <>
-        "Use the non-bang variant (Repo.#{String.replace_trailing(func_str, "!", "")})\n" <>
-        "and handle the result explicitly.\n\n" <>
-        "  case Repo.#{String.replace_trailing(func_str, "!", "")}(record) do\n" <>
-        "    {:ok, _} -> {:ok, result}\n" <>
-        "    {:error, _} -> {:ok, result}  # already handled, that's fine\n" <>
-        "  end\n"
-      """
+      message:
+        "Repo.#{func_str} used in a job perform/1 function. Jobs may be retried on failure, so non-idempotent operations cause errors or duplicate data. Use the non-bang variant (Repo.#{String.replace_trailing(func_str, "!", "")}) and handle the result explicitly."
     }
   end
 end

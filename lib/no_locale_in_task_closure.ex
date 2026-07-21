@@ -136,17 +136,8 @@ defmodule Credo.Check.Extra.NoLocaleInTaskClosure do
       trigger: Issue.no_trigger(),
       check: __MODULE__,
       category: :consistency,
-      message: """
-        Gettext call inside a Task.async closure without capturing the locale.\n" <>
-        "Gettext functions use the calling process's locale, which in a task is\n" <>
-        "the default locale, not the user's locale.\n\n" <>
-        "Capture the locale before spawning the task:\n\n" <>
-        "  locale = Gettext.get_locale()\n" <>
-        "  Task.async(fn ->\n" <>
-        "    Gettext.put_locale(locale)\n" <>
-        "    # ... your gettext calls here ...\n" <>
-        "  end)\n"
-      """
+      message:
+        "Gettext call inside a Task.async closure without capturing the locale. Gettext functions use the calling process's locale, which in a task is the default locale, not the user's locale. Capture the locale before spawning the task."
     }
   end
 end

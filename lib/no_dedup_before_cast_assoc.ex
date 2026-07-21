@@ -123,13 +123,8 @@ defmodule Credo.Check.Extra.NoDedupBeforeCastAssoc do
       trigger: Issue.no_trigger(),
       check: __MODULE__,
       category: :consistency,
-      message: """
-        cast_assoc(:#{assoc_name}) without deduplication. If the input list\n" <>
-        "contains duplicates, cast_assoc will insert duplicate associated records.\n\n" <>
-        "Deduplicate the list before passing to cast_assoc:\n\n" <>
-        "  items = Enum.uniq_by(items, & &1.id)\n" <>
-        "  changeset = cast_assoc(changeset, :#{assoc_name}, with: &changeset/1)\n"
-      """
+      message:
+        "cast_assoc(:#{assoc_name}) without deduplication. If the input list contains duplicates, cast_assoc will insert duplicate associated records. Deduplicate the list before passing to cast_assoc."
     }
   end
 end

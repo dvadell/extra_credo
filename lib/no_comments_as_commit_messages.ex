@@ -67,7 +67,7 @@ defmodule Credo.Check.Extra.NoCommentsAsCommitMessages do
     end
   end
 
-  defp issue(source_file, line_no, text, kind) do
+  defp issue(source_file, line_no, _text, kind) do
     [
       %Issue{
         filename: source_file.filename,
@@ -76,13 +76,8 @@ defmodule Credo.Check.Extra.NoCommentsAsCommitMessages do
         trigger: Issue.no_trigger(),
         check: __MODULE__,
         category: :consistency,
-        message: """
-        Comment looks like a #{kind} instead of explaining code behavior.
-        TODOs, issue references, and PR links belong in Git commit messages or
-        issue trackers, not in source code.
-
-          # #{text}
-        """
+        message:
+          "Comment looks like a #{kind} instead of explaining code behavior. TODOs, issue references, and PR links belong in Git commit messages or issue trackers, not in source code."
       }
     ]
   end

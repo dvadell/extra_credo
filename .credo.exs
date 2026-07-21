@@ -12,7 +12,7 @@
         ],
         excluded: []
       },
-      plugins: [],
+      plugins: [{ExtraCredo, []}],
       requires: [],
       strict: false,
       parse_timeout: 5000,
@@ -67,11 +67,8 @@
 
           # --- Warnings ---
           {Credo.Check.Warning.Dbg, []},
-          {Credo.Check.Warning.IoInspect, []},
-          {Credo.Check.Warning.Dbg, []},
-
-          # --- Custom Extra Checks (all at once) ---
-        ] ++ Enum.map(ExtraCredo.checks(), &{&1, []})
+          {Credo.Check.Warning.IoInspect, []}
+        ]
       }
     }
   ]

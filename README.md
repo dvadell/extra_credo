@@ -16,27 +16,29 @@ def deps do
 end
 ```
 
-Then register the checks in `.credo.exs`:
+Then register the plugin in `.credo.exs` — this auto-enables **all** checks:
+
+```elixir
+%{
+  configs: [
+    %{
+      name: "default",
+      plugins: [{ExtraCredo, []}]
+    }
+  ]
+}
+```
+
+That's it. No need to list individual checks — the plugin registers all of them automatically.
+
+If you prefer to cherry-pick, use `ExtraCredo.checks()` to get the full list:
 
 ```elixir
 %{
   configs: [
     %{
       checks: %{
-        enabled: [
-          {Credo.Check.Extra.NoFloatForMoney, []},
-          {Credo.Check.Extra.NoBareChangesetError, []},
-          {Credo.Check.Extra.NoAssignNewInMount, []},
-          {Credo.Check.Extra.NoAuthInHandleEvent, []},
-          {Credo.Check.Extra.NoExternalResource, []},
-          {Credo.Check.Extra.NoImplicitCrossJoin, []},
-          {Credo.Check.Extra.NoPubsubWithoutConnected, []},
-          {Credo.Check.Extra.NoRawUntrusted, []},
-          {Credo.Check.Extra.ObanAtomKeys, []},
-          {Credo.Check.Extra.ObanStructInArgs, []},
-          {Credo.Check.Extra.UnpinnedQueryBindings, []},
-          {Credo.Check.Extra.NoColorfulEmoji, []}
-        ]
+        enabled: Enum.map(ExtraCredo.checks(), &{&1, []})
       }
     }
   ]

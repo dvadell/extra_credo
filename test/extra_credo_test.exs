@@ -1,11 +1,79 @@
 defmodule ExtraCredoTest do
   use ExUnit.Case
 
+  alias ExtraCredo.EnableExtraChecks
+
   test "returns all check modules" do
     checks = ExtraCredo.checks()
     assert is_list(checks)
     assert length(checks) == 20
     assert Credo.Check.Extra.NoFloatForMoney in checks
+  end
+
+  test "recommended_checks/0 returns all checks" do
+    assert ExtraCredo.recommended_checks() == ExtraCredo.checks()
+  end
+
+  test "init/1 appends EnableExtraChecks task to resolve_config" do
+    exec = %Credo.Execution{
+      initializing_plugin: ExtraCredo,
+      pipeline_map: %{Credo.Execution => [resolve_config: []]}
+    }
+
+    result = ExtraCredo.init(exec)
+
+    assert %Credo.Execution{} = result
+    pipeline = result.pipeline_map[Credo.Execution]
+    resolve_config_tasks = Keyword.get(pipeline, :resolve_config)
+    assert {ExtraCredo.EnableExtraChecks, []} in resolve_config_tasks
+  end
+
+  test "EnableExtraChecks adds all ExtraCredo checks and preserves existing" do
+    existing_check = {Credo.Check.Readability.ModuleDoc, []}
+
+    exec = %Credo.Execution{
+      checks: %{
+        enabled: [existing_check],
+        disabled: []
+      }
+    }
+
+    result = EnableExtraChecks.call(exec, [])
+
+    assert %Credo.Execution{} = result
+    assert {Credo.Check.Readability.ModuleDoc, []} in result.checks.enabled
+
+    for check <- ExtraCredo.checks() do
+      assert {check, []} in result.checks.enabled,
+             "Expected #{inspect(check)} to be enabled"
+    end
+  end
+
+  test "EnableExtraChecks call/1 returns exec unchanged" do
+    exec = %Credo.Execution{
+      checks: %{enabled: [{Credo.Check.Readability.ModuleDoc, []}], disabled: []}
+    }
+
+    result = EnableExtraChecks.call(exec)
+
+    assert result.checks.enabled == [{Credo.Check.Readability.ModuleDoc, []}]
+  end
+
+  test "EnableExtraChecks deduplicates overlapping checks" do
+    check = hd(ExtraCredo.checks())
+    expected_count = length(ExtraCredo.checks()) + 1
+
+    exec = %Credo.Execution{
+      checks: %{
+        enabled: [{check, []}, {Credo.Check.Readability.AliasOrder, []}],
+        disabled: []
+      }
+    }
+
+    result = EnableExtraChecks.call(exec, [])
+
+    assert length(result.checks.enabled) == expected_count
+    assert {Credo.Check.Readability.AliasOrder, []} in result.checks.enabled
   end
 end
 
